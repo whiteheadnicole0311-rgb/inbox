@@ -1,0 +1,1032 @@
+<title>Tidal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #1b2430;
+    --paper: #f6f4ef;
+    --surface: #ffffff;
+    --surface-2: #efece4;
+    --teal: #2c6e6a;
+    --teal-deep: #1d4f4c;
+    --teal-tint: #e3efed;
+    --coral: #c14f30;
+    --coral-tint: #fbe9e3;
+    --amber: #9c7418;
+    --amber-tint: #f7edd8;
+    --slate: #5c6b76;
+    --mist: #dfe0d8;
+    --focus: #2c6e6a;
+    --shadow: 0 1px 2px rgba(27,36,48,.06), 0 6px 20px rgba(27,36,48,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9ece8;
+      --paper: #10161a;
+      --surface: #182024;
+      --surface-2: #1e2a2d;
+      --teal: #6bbab2;
+      --teal-deep: #4c9089;
+      --teal-tint: #1c2f2e;
+      --coral: #e58869;
+      --coral-tint: #302019;
+      --amber: #e0b869;
+      --amber-tint: #2e2717;
+      --slate: #9bacb3;
+      --mist: #2a353a;
+      --focus: #6bbab2;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9ece8;
+    --paper: #10161a;
+    --surface: #182024;
+    --surface-2: #1e2a2d;
+    --teal: #6bbab2;
+    --teal-deep: #4c9089;
+    --teal-tint: #1c2f2e;
+    --coral: #e58869;
+    --coral-tint: #302019;
+    --amber: #e0b869;
+    --amber-tint: #2e2717;
+    --slate: #9bacb3;
+    --mist: #2a353a;
+    --focus: #6bbab2;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.45;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    font-weight: 600;
+  }
+  .tabular { font-variant-numeric: tabular-nums; }
+  a { color: var(--teal-deep); }
+  :where(a,button,input,select,textarea):focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px 64px; }
+
+  header.top {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--paper);
+    border-bottom: 1px solid var(--mist);
+  }
+  .topbar {
+    max-width: 1000px; margin: 0 auto; padding: 16px 16px 0;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-size: 26px; margin: 0; color: var(--teal-deep); }
+  .brand .sub { color: var(--slate); font-size: 13px; }
+  .today { color: var(--slate); font-size: 13px; text-align: right; }
+  .sync-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); margin-right: 5px; }
+  .sync-dot.off { background: var(--amber); }
+
+  nav.tabs {
+    max-width: 1000px; margin: 12px auto 0; padding: 0 16px;
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin;
+  }
+  nav.tabs button {
+    appearance: none; border: none; background: none; cursor: pointer;
+    font-family: 'Inter'; font-size: 14px; font-weight: 600; color: var(--slate);
+    padding: 10px 14px; border-radius: 8px 8px 0 0; white-space: nowrap;
+    border-bottom: 2px solid transparent;
+  }
+  nav.tabs button.active { color: var(--teal-deep); border-bottom-color: var(--teal); }
+  nav.tabs button:hover { background: var(--surface-2); }
+
+  section.tab { padding-top: 20px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--mist); border-radius: 12px;
+    padding: 18px; box-shadow: var(--shadow);
+  }
+  .card + .card, .stack > * + * { margin-top: 14px; }
+  .grid { display: grid; gap: 14px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 700px) {
+    .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+  }
+
+  .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 28px 0 12px; }
+  .section-title:first-child { margin-top: 0; }
+  .section-title h2 { font-size: 19px; margin: 0; }
+  .muted { color: var(--slate); }
+  .small { font-size: 12.5px; }
+
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat .label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--slate); }
+  .stat .value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; }
+  .stat .delta { font-size: 12px; color: var(--slate); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .badge.ok { background: var(--teal-tint); color: var(--teal-deep); }
+  .badge.warn { background: var(--amber-tint); color: var(--amber); }
+  .badge.crit { background: var(--coral-tint); color: var(--coral); }
+  .badge.neutral { background: var(--surface-2); color: var(--slate); }
+
+  .alert-banner {
+    display: flex; gap: 10px; align-items: flex-start; background: var(--coral-tint);
+    border: 1px solid color-mix(in srgb, var(--coral) 35%, transparent);
+    color: var(--coral); border-radius: 10px; padding: 12px 14px; font-size: 14px;
+  }
+  .alert-banner b { color: inherit; }
+
+  label { display: block; font-size: 12.5px; font-weight: 600; color: var(--slate); margin-bottom: 4px; }
+  input, select, textarea {
+    width: 100%; font-family: inherit; font-size: 14px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--mist); border-radius: 8px;
+    padding: 9px 10px;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .field { margin-bottom: 12px; }
+  .field.inline { display: flex; align-items: center; gap: 8px; }
+  .field.inline label { margin: 0; }
+  .checkrow { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .checkrow input { width: auto; }
+  .checkrow label { margin: 0; font-weight: 500; color: var(--ink); }
+  .hint { font-size: 12px; color: var(--slate); margin-top: 3px; }
+
+  button.btn {
+    appearance: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 13.5px;
+    border-radius: 8px; padding: 9px 14px; border: 1px solid transparent;
+  }
+  .btn.primary { background: var(--teal-deep); color: #fff; }
+  .btn.primary:hover { background: var(--teal); }
+  .btn.ghost { background: transparent; border-color: var(--mist); color: var(--ink); }
+  .btn.ghost:hover { background: var(--surface-2); }
+  .btn.danger { background: transparent; border-color: var(--mist); color: var(--coral); }
+  .btn.danger:hover { background: var(--coral-tint); }
+  .btn.sm { padding: 5px 10px; font-size: 12.5px; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--mist); vertical-align: top; }
+  th { color: var(--slate); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+  .table-scroll { overflow-x: auto; }
+  tr.reorder td { background: var(--coral-tint); }
+
+  .entry-row { display: flex; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--mist); }
+  .entry-row:last-child { border-bottom: none; }
+  .entry-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .entry-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .pill-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .supply-card { border: 1px solid var(--mist); border-radius: 10px; padding: 12px; background: var(--surface); }
+  .supply-card.low { border-color: color-mix(in srgb, var(--coral) 45%, var(--mist)); }
+  .supply-card h4 { margin: 0 0 6px; font-size: 14.5px; font-family: 'Inter'; font-weight: 700; }
+  .supply-card .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+  .supply-card input[type=number] { width: 70px; text-align: right; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--mist); background: var(--surface-2); cursor: pointer; font-weight: 700; }
+
+  .empty { text-align: center; padding: 36px 16px; color: var(--slate); }
+  .empty .display { color: var(--ink); font-size: 18px; margin-bottom: 4px; }
+
+  dialog#formModal {
+    border: none; border-radius: 14px; padding: 0; width: min(560px, 92vw);
+    background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
+  }
+  dialog#formModal::backdrop { background: rgba(20,24,20,.45); }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--mist); }
+  .modal-head h3 { margin: 0; font-size: 17px; }
+  .modal-body { padding: 16px 18px; max-height: 70vh; overflow-y: auto; }
+  .modal-foot { padding: 12px 18px 18px; display: flex; justify-content: flex-end; gap: 8px; }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--slate); font-size: 18px; line-height: 1; padding: 4px; }
+
+  .range-row { display: flex; align-items: center; gap: 10px; }
+  .range-row input[type=range] { flex: 1; }
+  .range-row .rv { width: 22px; text-align: right; font-weight: 700; }
+
+  @media print {
+    header.top, nav.tabs, .no-print { display: none !important; }
+    body { background: #fff; color: #000; }
+    .wrap { max-width: 100%; padding: 0; }
+    section.tab:not(#tab-report) { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Tidal</h1>
+        <span class="sub">PAH &amp; Remodulin care log</span>
+      </div>
+      <div class="today">
+        <div id="syncStatus"><span class="sync-dot off"></span>connecting…</div>
+        <div id="todayDate" class="tabular"></div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="dashboard" class="active">Dashboard</button>
+      <button data-tab="checkin">Check-in</button>
+      <button data-tab="meds">Medications</button>
+      <button data-tab="supplies">Supplies</button>
+      <button data-tab="report">Report</button>
+    </nav>
+  </header>
+
+  <!-- DASHBOARD -->
+  <section class="tab" id="tab-dashboard">
+    <div id="dashAlerts" class="stack"></div>
+
+    <div class="grid cols-4" id="dashStats" style="margin-top:16px;"></div>
+
+    <div class="section-title"><h2>Recent check-ins</h2><button class="btn ghost sm" data-goto="checkin">Log a check-in →</button></div>
+    <div class="card" id="dashRecent"></div>
+
+    <div class="grid cols-2" style="margin-top:20px;">
+      <div>
+        <div class="section-title"><h2>Current medications</h2></div>
+        <div class="card" id="dashMeds"></div>
+      </div>
+      <div>
+        <div class="section-title"><h2>Supply status</h2></div>
+        <div class="card" id="dashSupplyStatus"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECK-IN -->
+  <section class="tab" id="tab-checkin" hidden>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:18px;">New check-in</h2>
+      <form id="checkinForm">
+        <input type="hidden" id="ci-id">
+        <div class="grid cols-3">
+          <div class="field">
+            <label for="ci-date">Date</label>
+            <input type="date" id="ci-date" required>
+          </div>
+          <div class="field">
+            <label for="ci-whoClass">WHO functional class</label>
+            <select id="ci-whoClass">
+              <option value="">—</option>
+              <option value="I">I — no limitation</option>
+              <option value="II">II — slight limitation</option>
+              <option value="III">III — marked limitation</option>
+              <option value="IV">IV — symptomatic at rest</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ci-sixmwt">6-min walk distance (m)</label>
+            <input type="number" id="ci-sixmwt" min="0" step="1">
+          </div>
+        </div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Vitals</h2></div>
+        <div class="grid cols-4">
+          <div class="field"><label for="ci-o2rest">O₂ sat, rest (%)</label><input type="number" id="ci-o2rest" min="0" max="100"></div>
+          <div class="field"><label for="ci-o2ex">O₂ sat, exertion (%)</label><input type="number" id="ci-o2ex" min="0" max="100"></div>
+          <div class="field"><label for="ci-hr">Heart rate (bpm)</label><input type="number" id="ci-hr" min="0"></div>
+          <div class="field"><label for="ci-weight">Weight (lb)</label><input type="number" id="ci-weight" min="0" step="0.1"></div>
+          <div class="field"><label for="ci-bpsys">BP systolic</label><input type="number" id="ci-bpsys" min="0"></div>
+          <div class="field"><label for="ci-bpdia">BP diastolic</label><input type="number" id="ci-bpdia" min="0"></div>
+        </div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Symptoms</h2></div>
+        <div class="grid cols-2">
+          <div class="field">
+            <label for="ci-dyspnea">Shortness of breath (0 none – 10 severe)</label>
+            <div class="range-row"><input type="range" id="ci-dyspnea" min="0" max="10" value="0"><span class="rv tabular" id="ci-dyspnea-v">0</span></div>
+          </div>
+          <div class="field">
+            <label for="ci-fatigue">Fatigue (0 none – 10 severe)</label>
+            <div class="range-row"><input type="range" id="ci-fatigue" min="0" max="10" value="0"><span class="rv tabular" id="ci-fatigue-v">0</span></div>
+          </div>
+          <div class="field">
+            <label for="ci-edema">Swelling / edema</label>
+            <select id="ci-edema"><option value="none">None</option><option value="mild">Mild</option><option value="moderate">Moderate</option><option value="severe">Severe</option></select>
+          </div>
+          <div class="field">
+            <label for="ci-edemaLoc">Location (if any)</label>
+            <input type="text" id="ci-edemaLoc" placeholder="e.g. ankles, abdomen">
+          </div>
+        </div>
+        <div class="grid cols-3">
+          <div class="checkrow"><input type="checkbox" id="ci-chestpain"><label for="ci-chestpain">Chest pain</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-dizziness"><label for="ci-dizziness">Dizziness / lightheadedness</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-palpitations"><label for="ci-palpitations">Palpitations</label></div>
+        </div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Infusion &amp; site</h2></div>
+        <div class="grid cols-2">
+          <div class="field">
+            <label>Site issues</label>
+            <div class="grid cols-2" style="gap:2px;">
+              <div class="checkrow"><input type="checkbox" class="ci-site" value="redness" id="site-redness"><label for="site-redness">Redness</label></div>
+              <div class="checkrow"><input type="checkbox" class="ci-site" value="swelling" id="site-swelling"><label for="site-swelling">Swelling</label></div>
+              <div class="checkrow"><input type="checkbox" class="ci-site" value="drainage" id="site-drainage"><label for="site-drainage">Drainage</label></div>
+              <div class="checkrow"><input type="checkbox" class="ci-site" value="pain" id="site-pain"><label for="site-pain">Pain at site</label></div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="checkrow"><input type="checkbox" id="ci-pumpalarm"><label for="ci-pumpalarm">Pump alarm / malfunction</label></div>
+            <textarea id="ci-pumpNotes" placeholder="Alarm code, what happened, resolution…"></textarea>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ci-notes">Notes for your care team</label>
+          <textarea id="ci-notes" placeholder="Anything else worth flagging…"></textarea>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button type="submit" class="btn primary">Save check-in</button>
+          <button type="button" class="btn ghost" id="ci-cancel" hidden>Cancel edit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-title"><h2>History</h2></div>
+    <div class="card" id="checkinHistory"></div>
+  </section>
+
+  <!-- MEDICATIONS -->
+  <section class="tab" id="tab-meds" hidden>
+    <div class="section-title"><h2>Current medications</h2><button class="btn primary sm" id="btnAddMed">+ Add medication</button></div>
+    <div class="grid cols-2" id="medsList"></div>
+
+    <div class="section-title" style="margin-top:28px;"><h2>Log a dose or medication change</h2></div>
+    <div class="card">
+      <form id="changeForm">
+        <div class="grid cols-3">
+          <div class="field">
+            <label for="ch-med">Medication</label>
+            <select id="ch-med" required></select>
+          </div>
+          <div class="field"><label for="ch-date">Date</label><input type="date" id="ch-date" required></div>
+          <div class="field"><label for="ch-newdose">New dose</label><input type="text" id="ch-newdose" placeholder="e.g. 42 ng/kg/min" required></div>
+        </div>
+        <div class="field"><label for="ch-reason">Reason for change</label><input type="text" id="ch-reason" placeholder="e.g. breakthrough symptoms, titration schedule"></div>
+        <div class="field"><label for="ch-notes">Notes</label><textarea id="ch-notes" placeholder="Ordered by, how it's tolerated…"></textarea></div>
+        <button type="submit" class="btn primary">Log change</button>
+      </form>
+    </div>
+
+    <div class="section-title" style="margin-top:28px;"><h2>Change history</h2></div>
+    <div class="card" id="changeHistory"></div>
+  </section>
+
+  <!-- SUPPLIES -->
+  <section class="tab" id="tab-supplies" hidden>
+    <div id="supplyAlert"></div>
+    <div id="supplyGroups" style="margin-top:14px;"></div>
+
+    <div class="section-title" style="margin-top:28px;"><h2>Add a new supply</h2></div>
+    <div class="card">
+      <form id="supplyForm">
+        <div class="grid cols-4">
+          <div class="field"><label for="sp-name">Name</label><input type="text" id="sp-name" required></div>
+          <div class="field">
+            <label for="sp-category">Category</label>
+            <select id="sp-category">
+              <option>Medication</option>
+              <option>Infusion &amp; pump</option>
+              <option>Site care &amp; dressing</option>
+              <option>PPE</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label for="sp-unit">Unit</label><input type="text" id="sp-unit" placeholder="each, box, kit…" value="each"></div>
+          <div class="field"><label for="sp-threshold">Reorder at</label><input type="number" id="sp-threshold" min="0" value="1"></div>
+        </div>
+        <div class="field"><label for="sp-notes">Notes</label><input type="text" id="sp-notes" placeholder="supplier, size, brand…"></div>
+        <button type="submit" class="btn primary">Add supply</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section class="tab" id="tab-report" hidden>
+    <div class="card no-print">
+      <div class="grid cols-3">
+        <div class="field"><label for="rp-from">From</label><input type="date" id="rp-from"></div>
+        <div class="field"><label for="rp-to">To</label><input type="date" id="rp-to"></div>
+        <div class="field" style="align-self:end;"><button class="btn ghost" id="rp-apply" type="button">Update range</button></div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+        <button class="btn primary" id="rp-print">Print / save as PDF</button>
+        <button class="btn ghost" id="rp-csv-checkins">Download check-ins CSV</button>
+        <button class="btn ghost" id="rp-csv-meds">Download medications CSV</button>
+        <button class="btn ghost" id="rp-csv-supplies">Download supplies CSV</button>
+      </div>
+    </div>
+
+    <div id="reportBody" style="margin-top:16px;"></div>
+  </section>
+</div>
+
+<dialog id="formModal">
+  <div class="modal-head"><h3 id="modalTitle">Medication</h3><button class="icon-btn" id="modalClose" aria-label="Close">✕</button></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-foot">
+    <button class="btn ghost" id="modalCancel" type="button">Cancel</button>
+    <button class="btn primary" id="modalSave" type="button">Save</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- helpers ----------
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  function fmtDate(s) {
+    if (!s) return "—";
+    const [y,m,d] = s.split("-").map(Number);
+    if (!y) return s;
+    return new Date(y, m-1, d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  }
+  function slug(s) {
+    return String(s).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || ("item-" + Date.now());
+  }
+  function num(id) {
+    const v = $(id).value;
+    return v === "" ? null : Number(v);
+  }
+  function csvEscape(v) {
+    v = v == null ? "" : String(v);
+    return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
+  function toCsv(rows) {
+    return rows.map(r => r.map(csvEscape).join(",")).join("\r\n");
+  }
+
+  $("#todayDate").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  $("#ci-date").value = todayStr();
+  $("#ch-date").value = todayStr();
+
+  // ---------- tabs ----------
+  const tabs = ["dashboard","checkin","meds","supplies","report"];
+  function showTab(name) {
+    tabs.forEach(t => { $("#tab-" + t).hidden = t !== name; });
+    $$("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+    if (name === "report") renderReport();
+  }
+  $("#tabs").addEventListener("click", e => {
+    const b = e.target.closest("button[data-tab]");
+    if (b) showTab(b.dataset.tab);
+  });
+  document.addEventListener("click", e => {
+    const g = e.target.closest("[data-goto]");
+    if (g) showTab(g.dataset.goto);
+  });
+
+  // ---------- state ----------
+  let db = null;
+  let checkins = [];
+  let medications = [];
+  let medChanges = [];
+  let supplies = [];
+
+  const CATEGORY_ORDER = ["Medication", "Infusion & pump", "Site care & dressing", "PPE", "Other"];
+
+  // ---------- dashboard ----------
+  function statusFor(s) {
+    if (s.qtyOnHand <= 0) return "crit";
+    if (s.qtyOnHand <= s.reorderThreshold) return "warn";
+    return "ok";
+  }
+
+  function renderDashboard() {
+    const low = supplies.filter(s => statusFor(s) !== "ok").sort((a,b) => statusFor(a)==="crit"?-1:1);
+    const alerts = $("#dashAlerts");
+    if (low.length) {
+      alerts.innerHTML = `<div class="alert-banner"><span>⚠️</span><div><b>${low.length} supply item${low.length>1?"s":""} need${low.length>1?"":"s"} attention.</b>
+        ${esc(low.slice(0,6).map(s => s.name).join(", "))}${low.length>6?"…":""}
+        — <a href="#" data-goto="supplies">review supplies</a></div></div>`;
+    } else {
+      alerts.innerHTML = "";
+    }
+
+    const sorted = checkins.slice().sort((a,b) => a.date < b.date ? 1 : -1);
+    const last = sorted[0];
+    const prevWithWeight = sorted.find((c,i) => i>0 && c.weight != null);
+    const lastWeight = sorted.find(c => c.weight != null);
+    const lastMwt = sorted.find(c => c.sixMwt != null);
+
+    function deltaTxt(cur, list, field, unit) {
+      if (cur == null) return "";
+      const idx = list.indexOf(list.find(c => c[field] === cur));
+      const older = list.slice(idx+1).find(c => c[field] != null);
+      if (!older) return "";
+      const d = cur - older[field];
+      if (d === 0) return "no change since " + fmtDate(older.date);
+      return (d > 0 ? "+" : "") + d.toFixed(1).replace(/\.0$/,"") + unit + " since " + fmtDate(older.date);
+    }
+
+    const daysSince = last ? Math.round((new Date(todayStr()) - new Date(last.date)) / 86400000) : null;
+
+    $("#dashStats").innerHTML = [
+      { label: "Last check-in", value: last ? fmtDate(last.date) : "—", delta: daysSince != null ? (daysSince === 0 ? "today" : daysSince + " day" + (daysSince>1?"s":"") + " ago") : "no entries yet" },
+      { label: "WHO class", value: last && last.whoClass ? last.whoClass : "—", delta: last ? "" : "" },
+      { label: "Weight", value: lastWeight ? lastWeight.weight + " lb" : "—", delta: lastWeight ? deltaTxt(lastWeight.weight, sorted.filter(c=>c.weight!=null), "weight", " lb") : "" },
+      { label: "6-min walk", value: lastMwt ? lastMwt.sixMwt + " m" : "—", delta: lastMwt ? deltaTxt(lastMwt.sixMwt, sorted.filter(c=>c.sixMwt!=null), "sixMwt", " m") : "" },
+    ].map(s => `<div class="card stat"><span class="label">${esc(s.label)}</span><span class="value tabular">${esc(s.value)}</span><span class="delta">${esc(s.delta)}</span></div>`).join("");
+
+    $("#dashRecent").innerHTML = sorted.length ? sorted.slice(0,3).map(c => checkinRowHtml(c, false)).join("") :
+      `<div class="empty"><div class="display">No check-ins logged yet</div>Log your first one to start building a record for your care team.</div>`;
+
+    const activeMeds = medications.filter(m => m.active !== false);
+    $("#dashMeds").innerHTML = activeMeds.length ? activeMeds.map(m =>
+      `<div class="entry-row"><div><b>${esc(m.name)}</b><div class="muted small">${esc(m.dose||"")} ${esc(m.doseUnit||"")} · ${esc(m.route||"")}</div></div></div>`
+    ).join("") : `<div class="empty small">No active medications listed yet.</div>`;
+
+    const needReorder = supplies.filter(s => statusFor(s) !== "ok").length;
+    $("#dashSupplyStatus").innerHTML = `
+      <div class="entry-row"><span>Tracked items</span><b class="tabular">${supplies.length}</b></div>
+      <div class="entry-row"><span>Need reorder</span><b class="tabular" style="color:${needReorder ? 'var(--coral)' : 'var(--teal-deep)'}">${needReorder}</b></div>
+      <div style="margin-top:10px;"><button class="btn ghost sm" data-goto="supplies">Manage supplies →</button></div>`;
+  }
+
+  // ---------- checkins ----------
+  function checkinRowHtml(c, withActions) {
+    const badges = [];
+    if (c.whoClass) badges.push(`<span class="badge neutral">WHO ${esc(c.whoClass)}</span>`);
+    if (c.dyspnea >= 7) badges.push(`<span class="badge crit">SOB ${c.dyspnea}/10</span>`);
+    else if (c.dyspnea >= 4) badges.push(`<span class="badge warn">SOB ${c.dyspnea}/10</span>`);
+    if (c.edema && c.edema !== "none") badges.push(`<span class="badge ${c.edema==='severe'?'crit':'warn'}">edema: ${esc(c.edema)}</span>`);
+    if (c.chestPain) badges.push(`<span class="badge crit">chest pain</span>`);
+    if ((c.siteIssues||[]).length) badges.push(`<span class="badge warn">site: ${esc(c.siteIssues.join(", "))}</span>`);
+    if (c.pumpAlarm) badges.push(`<span class="badge crit">pump alarm</span>`);
+    return `<div class="entry-row">
+      <div>
+        <b>${esc(fmtDate(c.date))}</b>
+        <div class="entry-meta">${badges.join("") || '<span class="badge ok">stable</span>'}</div>
+        ${c.notes ? `<div class="small muted" style="margin-top:6px;max-width:60ch;">${esc(c.notes)}</div>` : ""}
+      </div>
+      ${withActions ? `<div class="entry-actions"><button class="btn ghost sm" data-edit-checkin="${c.id}">Edit</button><button class="btn danger sm" data-del-checkin="${c.id}">Delete</button></div>` : ""}
+    </div>`;
+  }
+
+  function renderCheckinHistory() {
+    const sorted = checkins.slice().sort((a,b) => a.date < b.date ? 1 : -1);
+    $("#checkinHistory").innerHTML = sorted.length ? sorted.map(c => checkinRowHtml(c, true)).join("") :
+      `<div class="empty"><div class="display">No entries yet</div>Your saved check-ins will appear here.</div>`;
+  }
+
+  function readCheckinForm() {
+    return {
+      date: $("#ci-date").value || todayStr(),
+      whoClass: $("#ci-whoClass").value,
+      sixMwt: num("#ci-sixmwt"),
+      o2Rest: num("#ci-o2rest"),
+      o2Exertion: num("#ci-o2ex"),
+      hr: num("#ci-hr"),
+      bpSys: num("#ci-bpsys"),
+      bpDia: num("#ci-bpdia"),
+      weight: num("#ci-weight"),
+      dyspnea: Number($("#ci-dyspnea").value),
+      fatigue: Number($("#ci-fatigue").value),
+      edema: $("#ci-edema").value,
+      edemaLocation: $("#ci-edemaLoc").value.trim(),
+      chestPain: $("#ci-chestpain").checked,
+      dizziness: $("#ci-dizziness").checked,
+      palpitations: $("#ci-palpitations").checked,
+      siteIssues: $$(".ci-site:checked").map(c => c.value),
+      pumpAlarm: $("#ci-pumpalarm").checked,
+      pumpNotes: $("#ci-pumpNotes").value.trim(),
+      notes: $("#ci-notes").value.trim(),
+    };
+  }
+
+  function resetCheckinForm() {
+    $("#checkinForm").reset();
+    $("#ci-id").value = "";
+    $("#ci-date").value = todayStr();
+    $("#ci-dyspnea-v").textContent = "0";
+    $("#ci-fatigue-v").textContent = "0";
+    $("#ci-cancel").hidden = true;
+  }
+
+  $("#ci-dyspnea").addEventListener("input", e => $("#ci-dyspnea-v").textContent = e.target.value);
+  $("#ci-fatigue").addEventListener("input", e => $("#ci-fatigue-v").textContent = e.target.value);
+  $("#ci-cancel").addEventListener("click", resetCheckinForm);
+
+  $("#checkinForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const data = readCheckinForm();
+    const id = $("#ci-id").value;
+    try {
+      if (id) await db.collection("checkins").doc(id).set(data);
+      else await db.collection("checkins").add(Object.assign({}, data, { createdAt: new Date().toISOString() }));
+      resetCheckinForm();
+    } catch (err) { alert("Couldn't save: " + err.message); }
+  });
+
+  $("#checkinHistory").addEventListener("click", async (e) => {
+    const editBtn = e.target.closest("[data-edit-checkin]");
+    const delBtn = e.target.closest("[data-del-checkin]");
+    if (editBtn) {
+      const c = checkins.find(x => x.id === editBtn.dataset.editCheckin);
+      if (!c) return;
+      $("#ci-id").value = c.id;
+      $("#ci-date").value = c.date || todayStr();
+      $("#ci-whoClass").value = c.whoClass || "";
+      $("#ci-sixmwt").value = c.sixMwt ?? "";
+      $("#ci-o2rest").value = c.o2Rest ?? "";
+      $("#ci-o2ex").value = c.o2Exertion ?? "";
+      $("#ci-hr").value = c.hr ?? "";
+      $("#ci-bpsys").value = c.bpSys ?? "";
+      $("#ci-bpdia").value = c.bpDia ?? "";
+      $("#ci-weight").value = c.weight ?? "";
+      $("#ci-dyspnea").value = c.dyspnea || 0; $("#ci-dyspnea-v").textContent = c.dyspnea || 0;
+      $("#ci-fatigue").value = c.fatigue || 0; $("#ci-fatigue-v").textContent = c.fatigue || 0;
+      $("#ci-edema").value = c.edema || "none";
+      $("#ci-edemaLoc").value = c.edemaLocation || "";
+      $("#ci-chestpain").checked = !!c.chestPain;
+      $("#ci-dizziness").checked = !!c.dizziness;
+      $("#ci-palpitations").checked = !!c.palpitations;
+      $$(".ci-site").forEach(cb => cb.checked = (c.siteIssues||[]).includes(cb.value));
+      $("#ci-pumpalarm").checked = !!c.pumpAlarm;
+      $("#ci-pumpNotes").value = c.pumpNotes || "";
+      $("#ci-notes").value = c.notes || "";
+      $("#ci-cancel").hidden = false;
+      showTab("checkin");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (delBtn) {
+      if (confirm("Delete this check-in?") && db) {
+        db.collection("checkins").doc(delBtn.dataset.delCheckin).delete().catch(err => alert(err.message));
+      }
+    }
+  });
+  $("#dashRecent").addEventListener("click", () => {});
+
+  // ---------- medications ----------
+  function renderMeds() {
+    $("#medsList").innerHTML = medications.length ? medications.map(m => `
+      <div class="card">
+        <div class="row" style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <b style="font-size:15px;">${esc(m.name)}</b> ${m.active === false ? '<span class="badge neutral">discontinued</span>' : '<span class="badge ok">active</span>'}
+            <div class="small muted" style="margin-top:4px;">${esc(m.dose||"")} ${esc(m.doseUnit||"")} · ${esc(m.route||"")} · ${esc(m.frequency||"")}</div>
+            ${m.prescriber ? `<div class="small muted">Prescriber: ${esc(m.prescriber)}</div>` : ""}
+            ${m.startDate ? `<div class="small muted">Started ${esc(fmtDate(m.startDate))}</div>` : ""}
+            ${m.notes ? `<div class="small" style="margin-top:6px;">${esc(m.notes)}</div>` : ""}
+          </div>
+          <div class="entry-actions">
+            <button class="btn ghost sm" data-edit-med="${m.id}">Edit</button>
+            <button class="btn danger sm" data-del-med="${m.id}">Delete</button>
+          </div>
+        </div>
+      </div>`).join("") : `<div class="card empty">No medications listed yet. Add your first one.</div>`;
+
+    $("#ch-med").innerHTML = medications.filter(m => m.active !== false).map(m => `<option value="${esc(m.name)}">${esc(m.name)}</option>`).join("") || `<option value="">Add a medication first</option>`;
+  }
+
+  function renderChangeHistory() {
+    const sorted = medChanges.slice().sort((a,b) => a.date < b.date ? 1 : -1);
+    $("#changeHistory").innerHTML = sorted.length ? `<div class="table-scroll"><table>
+      <thead><tr><th>Date</th><th>Medication</th><th>New dose</th><th>Reason</th><th>Notes</th><th></th></tr></thead>
+      <tbody>${sorted.map(c => `<tr>
+        <td class="tabular">${esc(fmtDate(c.date))}</td>
+        <td>${esc(c.medName)}</td>
+        <td class="tabular">${esc(c.newDose)}</td>
+        <td>${esc(c.reason||"")}</td>
+        <td>${esc(c.notes||"")}</td>
+        <td><button class="btn danger sm" data-del-change="${c.id}">Delete</button></td>
+      </tr>`).join("")}</tbody></table></div>` : `<div class="empty small">No dose or medication changes logged yet.</div>`;
+  }
+
+  $("#btnAddMed").addEventListener("click", () => openMedModal(null));
+
+  function openMedModal(med) {
+    $("#modalTitle").textContent = med ? "Edit medication" : "Add medication";
+    $("#modalBody").innerHTML = `
+      <div class="field"><label>Name</label><input id="m-name" value="${esc(med?.name||"")}"></div>
+      <div class="grid cols-2">
+        <div class="field"><label>Dose</label><input id="m-dose" placeholder="e.g. 40" value="${esc(med?.dose||"")}"></div>
+        <div class="field"><label>Unit</label><input id="m-doseUnit" placeholder="ng/kg/min, mg, etc." value="${esc(med?.doseUnit||"")}"></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="field"><label>Route</label><input id="m-route" placeholder="Continuous IV, oral, subQ…" value="${esc(med?.route||"")}"></div>
+        <div class="field"><label>Frequency</label><input id="m-frequency" placeholder="Continuous, twice daily…" value="${esc(med?.frequency||"")}"></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="field"><label>Prescriber</label><input id="m-prescriber" value="${esc(med?.prescriber||"")}"></div>
+        <div class="field"><label>Start date</label><input type="date" id="m-startDate" value="${esc(med?.startDate||"")}"></div>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="m-notes">${esc(med?.notes||"")}</textarea></div>
+      <div class="checkrow"><input type="checkbox" id="m-active" ${med?.active === false ? "" : "checked"}><label for="m-active">Active</label></div>
+    `;
+    $("#formModal").dataset.mode = "med";
+    $("#formModal").dataset.id = med?.id || "";
+    $("#formModal").showModal();
+  }
+
+  function openSupplyEditModal() {} // reserved
+
+  $("#medsList").addEventListener("click", (e) => {
+    const editBtn = e.target.closest("[data-edit-med]");
+    const delBtn = e.target.closest("[data-del-med]");
+    if (editBtn) openMedModal(medications.find(m => m.id === editBtn.dataset.editMed));
+    if (delBtn && db) {
+      if (confirm("Delete this medication? Its change history will be kept.")) {
+        db.collection("medications").doc(delBtn.dataset.delMed).delete().catch(err => alert(err.message));
+      }
+    }
+  });
+
+  $("#changeHistory").addEventListener("click", (e) => {
+    const delBtn = e.target.closest("[data-del-change]");
+    if (delBtn && db) db.collection("medChanges").doc(delBtn.dataset.delChange).delete().catch(err => alert(err.message));
+  });
+
+  $("#changeForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const medName = $("#ch-med").value;
+    const med = medications.find(m => m.name === medName);
+    const data = {
+      date: $("#ch-date").value || todayStr(),
+      medName,
+      previousDose: med ? (med.dose || "") + " " + (med.doseUnit || "") : "",
+      newDose: $("#ch-newdose").value.trim(),
+      reason: $("#ch-reason").value.trim(),
+      notes: $("#ch-notes").value.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    if (!data.medName || !data.newDose) return;
+    try {
+      await db.collection("medChanges").add(data);
+      if (med) {
+        const parts = data.newDose.match(/^([\d.]+)\s*(.*)$/);
+        await db.collection("medications").doc(med.id).update(parts ? { dose: parts[1], doseUnit: parts[2] || med.doseUnit } : { dose: data.newDose });
+      }
+      $("#changeForm").reset();
+      $("#ch-date").value = todayStr();
+    } catch (err) { alert("Couldn't log change: " + err.message); }
+  });
+
+  // ---------- modal (shared: medication) ----------
+  $("#modalClose").addEventListener("click", () => $("#formModal").close());
+  $("#modalCancel").addEventListener("click", () => $("#formModal").close());
+  $("#modalSave").addEventListener("click", async () => {
+    if (!db) return;
+    const modal = $("#formModal");
+    if (modal.dataset.mode === "med") {
+      const data = {
+        name: $("#m-name").value.trim(),
+        dose: $("#m-dose").value.trim(),
+        doseUnit: $("#m-doseUnit").value.trim(),
+        route: $("#m-route").value.trim(),
+        frequency: $("#m-frequency").value.trim(),
+        prescriber: $("#m-prescriber").value.trim(),
+        startDate: $("#m-startDate").value,
+        notes: $("#m-notes").value.trim(),
+        active: $("#m-active").checked,
+        updatedAt: new Date().toISOString(),
+      };
+      if (!data.name) { alert("Name is required."); return; }
+      try {
+        if (modal.dataset.id) await db.collection("medications").doc(modal.dataset.id).set(data);
+        else await db.collection("medications").add(data);
+        modal.close();
+      } catch (err) { alert(err.message); }
+    }
+  });
+
+  // ---------- supplies ----------
+  function supplyCardHtml(s) {
+    const status = statusFor(s);
+    const badge = status === "crit" ? `<span class="badge crit">out</span>` : status === "warn" ? `<span class="badge warn">reorder</span>` : `<span class="badge ok">stocked</span>`;
+    return `<div class="supply-card ${status !== 'ok' ? 'low' : ''}" data-supply="${s.id}">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px;">
+        <h4>${esc(s.name)}</h4>${badge}
+      </div>
+      <div class="row">
+        <span class="small muted">On hand</span>
+        <div class="stepper">
+          <button type="button" data-qty="-1">−</button>
+          <input type="number" class="qty-input tabular" value="${s.qtyOnHand}" min="0">
+          <button type="button" data-qty="1">+</button>
+        </div>
+      </div>
+      <div class="row"><span class="small muted">Unit</span><span class="small tabular">${esc(s.unit||"each")}</span></div>
+      <div class="row"><span class="small muted">Reorder at ≤</span><input type="number" class="threshold-input tabular" value="${s.reorderThreshold}" min="0" style="width:60px;"></div>
+      <div class="row"><span class="small muted">Last ordered</span><input type="date" class="lastordered-input" value="${s.lastOrdered||""}"></div>
+      ${s.notes ? `<div class="small muted" style="margin-top:6px;">${esc(s.notes)}</div>` : ""}
+      <div class="row" style="margin-top:8px;">
+        <button type="button" class="btn ghost sm" data-mark-ordered>Mark ordered today</button>
+        <button type="button" class="btn danger sm" data-del-supply>Delete</button>
+      </div>
+    </div>`;
+  }
+
+  function renderSupplies() {
+    const low = supplies.filter(s => statusFor(s) !== "ok");
+    $("#supplyAlert").innerHTML = low.length ? `<div class="alert-banner"><span>⚠️</span><div><b>Reorder from specialty pharmacy:</b> ${esc(low.map(s => s.name + " (" + s.qtyOnHand + " " + (s.unit||"") + ")").join(", "))}</div></div>` : `<div class="badge ok">All tracked supplies are above their reorder point.</div>`;
+
+    if (!supplies.length) {
+      $("#supplyGroups").innerHTML = `<div class="card empty"><div class="display">No supplies yet</div>Add your first item below.</div>`;
+      return;
+    }
+    const byCat = {};
+    supplies.forEach(s => { (byCat[s.category] = byCat[s.category] || []).push(s); });
+    const cats = Object.keys(byCat).sort((a,b) => CATEGORY_ORDER.indexOf(a) - CATEGORY_ORDER.indexOf(b));
+    $("#supplyGroups").innerHTML = cats.map(cat => `
+      <div class="section-title"><h2 style="font-size:15px;">${esc(cat)}</h2></div>
+      <div class="grid cols-3">${byCat[cat].sort((a,b)=>a.name.localeCompare(b.name)).map(supplyCardHtml).join("")}</div>
+    `).join("");
+  }
+
+  $("#supplyGroups").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-supply]");
+    if (!card || !db) return;
+    const id = card.dataset.supply;
+    const ref = db.collection("supplies").doc(id);
+    const s = supplies.find(x => x.id === id);
+    if (e.target.closest("[data-qty]")) {
+      const dir = Number(e.target.closest("[data-qty]").dataset.qty);
+      ref.update({ qtyOnHand: Math.max(0, (s.qtyOnHand||0) + dir) }).catch(err=>alert(err.message));
+    } else if (e.target.closest("[data-mark-ordered]")) {
+      ref.update({ lastOrdered: todayStr() }).catch(err=>alert(err.message));
+    } else if (e.target.closest("[data-del-supply]")) {
+      if (confirm(`Remove "${s.name}" from tracked supplies?`)) ref.delete().catch(err=>alert(err.message));
+    }
+  });
+  $("#supplyGroups").addEventListener("change", (e) => {
+    const card = e.target.closest("[data-supply]");
+    if (!card || !db) return;
+    const ref = db.collection("supplies").doc(card.dataset.supply);
+    if (e.target.classList.contains("qty-input")) ref.update({ qtyOnHand: Math.max(0, Number(e.target.value)||0) }).catch(err=>alert(err.message));
+    if (e.target.classList.contains("threshold-input")) ref.update({ reorderThreshold: Math.max(0, Number(e.target.value)||0) }).catch(err=>alert(err.message));
+    if (e.target.classList.contains("lastordered-input")) ref.update({ lastOrdered: e.target.value }).catch(err=>alert(err.message));
+  });
+
+  $("#supplyForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const name = $("#sp-name").value.trim();
+    if (!name) return;
+    const data = {
+      name,
+      category: $("#sp-category").value,
+      unit: $("#sp-unit").value.trim() || "each",
+      qtyOnHand: 0,
+      reorderThreshold: Math.max(0, Number($("#sp-threshold").value) || 0),
+      lastOrdered: "",
+      notes: $("#sp-notes").value.trim(),
+      custom: true,
+    };
+    let id = slug(name);
+    try {
+      const existing = await db.collection("supplies").doc(id).get();
+      if (existing.exists) id = slug(name + "-" + Date.now());
+      await db.collection("supplies").doc(id).set(data);
+      $("#supplyForm").reset();
+      $("#sp-unit").value = "each";
+      $("#sp-threshold").value = "1";
+    } catch (err) { alert("Couldn't add supply: " + err.message); }
+  });
+
+  // ---------- report ----------
+  $("#rp-from").value = (() => { const d = new Date(); d.setDate(d.getDate()-90); return d.toISOString().slice(0,10); })();
+  $("#rp-to").value = todayStr();
+  $("#rp-apply").addEventListener("click", renderReport);
+  $("#rp-print").addEventListener("click", () => window.print());
+
+  function inRange(dateStr) {
+    const from = $("#rp-from").value, to = $("#rp-to").value;
+    return (!from || dateStr >= from) && (!to || dateStr <= to);
+  }
+
+  function renderReport() {
+    const rangeCheckins = checkins.filter(c => inRange(c.date)).sort((a,b) => a.date < b.date ? -1 : 1);
+    const rangeChanges = medChanges.filter(c => inRange(c.date)).sort((a,b) => a.date < b.date ? -1 : 1);
+    const activeMeds = medications.filter(m => m.active !== false);
+    const low = supplies.filter(s => statusFor(s) !== "ok");
+    const first = rangeCheckins[0], last = rangeCheckins[rangeCheckins.length-1];
+
+    $("#reportBody").innerHTML = `
+      <div class="card">
+        <h2 style="margin-top:0;">Care summary</h2>
+        <p class="muted small">Range: ${esc(fmtDate($("#rp-from").value))} – ${esc(fmtDate($("#rp-to").value))} · generated ${esc(fmtDate(todayStr()))}</p>
+        <div class="grid cols-4">
+          <div class="stat"><span class="label">Check-ins logged</span><span class="value tabular">${rangeCheckins.length}</span></div>
+          <div class="stat"><span class="label">WHO class, latest</span><span class="value tabular">${last?.whoClass || "—"}</span></div>
+          <div class="stat"><span class="label">Weight change</span><span class="value tabular">${(first&&last&&first.weight!=null&&last.weight!=null) ? ((last.weight-first.weight)>=0?"+":"")+(last.weight-first.weight).toFixed(1)+" lb" : "—"}</span></div>
+          <div class="stat"><span class="label">6MWT change</span><span class="value tabular">${(first&&last&&first.sixMwt!=null&&last.sixMwt!=null) ? ((last.sixMwt-first.sixMwt)>=0?"+":"")+(last.sixMwt-first.sixMwt)+" m" : "—"}</span></div>
+        </div>
+      </div>
+
+      <div class="section-title"><h2>Current medications</h2></div>
+      <div class="card">${activeMeds.length ? `<div class="table-scroll"><table><thead><tr><th>Medication</th><th>Dose</th><th>Route</th><th>Frequency</th><th>Since</th></tr></thead>
+        <tbody>${activeMeds.map(m => `<tr><td>${esc(m.name)}</td><td class="tabular">${esc(m.dose)} ${esc(m.doseUnit)}</td><td>${esc(m.route||"")}</td><td>${esc(m.frequency||"")}</td><td class="tabular">${esc(fmtDate(m.startDate))}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted small">None listed.</p>`}</div>
+
+      <div class="section-title"><h2>Medication changes in range</h2></div>
+      <div class="card">${rangeChanges.length ? `<div class="table-scroll"><table><thead><tr><th>Date</th><th>Medication</th><th>New dose</th><th>Reason</th></tr></thead>
+        <tbody>${rangeChanges.map(c => `<tr><td class="tabular">${esc(fmtDate(c.date))}</td><td>${esc(c.medName)}</td><td class="tabular">${esc(c.newDose)}</td><td>${esc(c.reason||"")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No changes in this range.</p>`}</div>
+
+      <div class="section-title"><h2>Check-in log</h2></div>
+      <div class="card">${rangeCheckins.length ? `<div class="table-scroll"><table><thead><tr><th>Date</th><th>WHO</th><th>6MWT</th><th>O₂ rest/ex.</th><th>HR</th><th>BP</th><th>Wt</th><th>SOB</th><th>Fatigue</th><th>Edema</th><th>Flags</th></tr></thead>
+        <tbody>${rangeCheckins.slice().reverse().map(c => `<tr>
+          <td class="tabular">${esc(fmtDate(c.date))}</td><td>${esc(c.whoClass||"")}</td><td class="tabular">${c.sixMwt??""}</td>
+          <td class="tabular">${c.o2Rest??""}/${c.o2Exertion??""}</td><td class="tabular">${c.hr??""}</td>
+          <td class="tabular">${c.bpSys??""}/${c.bpDia??""}</td><td class="tabular">${c.weight??""}</td>
+          <td class="tabular">${c.dyspnea}</td><td class="tabular">${c.fatigue}</td><td>${esc(c.edema||"")}</td>
+          <td>${[c.chestPain&&"chest pain", c.dizziness&&"dizziness", c.palpitations&&"palpitations", c.pumpAlarm&&"pump alarm", (c.siteIssues||[]).join(" ")].filter(Boolean).join(", ")}</td>
+        </tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No check-ins in this range.</p>`}</div>
+
+      <div class="section-title"><h2>Supplies needing reorder</h2></div>
+      <div class="card">${low.length ? `<ul>${low.map(s => `<li>${esc(s.name)} — ${s.qtyOnHand} ${esc(s.unit)} on hand (reorder at ${s.reorderThreshold})</li>`).join("")}</ul>` : `<p class="muted small">Nothing currently below its reorder point.</p>`}</div>
+    `;
+  }
+
+  $("#rp-csv-checkins").addEventListener("click", () => downloadCsv(
+    "checkins.csv",
+    [["date","who_class","six_mwt_m","o2_rest","o2_exertion","hr","bp_sys","bp_dia","weight_lb","dyspnea_0_10","fatigue_0_10","edema","edema_location","chest_pain","dizziness","palpitations","site_issues","pump_alarm","pump_notes","notes"]]
+      .concat(checkins.slice().sort((a,b)=>a.date<b.date?-1:1).map(c => [c.date,c.whoClass,c.sixMwt,c.o2Rest,c.o2Exertion,c.hr,c.bpSys,c.bpDia,c.weight,c.dyspnea,c.fatigue,c.edema,c.edemaLocation,c.chestPain,c.dizziness,c.palpitations,(c.siteIssues||[]).join(" "),c.pumpAlarm,c.pumpNotes,c.notes]))
+  ));
+  $("#rp-csv-meds").addEventListener("click", () => downloadCsv(
+    "medications.csv",
+    [["name","dose","dose_unit","route","frequency","prescriber","start_date","active","notes"]].concat(medications.map(m => [m.name,m.dose,m.doseUnit,m.route,m.frequency,m.prescriber,m.startDate,m.active!==false,m.notes]))
+      .concat([[]]).concat([["--- change history ---"]]).concat([["date","medication","previous_dose","new_dose","reason","notes"]])
+      .concat(medChanges.slice().sort((a,b)=>a.date<b.date?-1:1).map(c => [c.date,c.medName,c.previousDose,c.newDose,c.reason,c.notes]))
+  ));
+  $("#rp-csv-supplies").addEventListener("click", () => downloadCsv(
+    "supplies.csv",
+    [["name","category","unit","qty_on_hand","reorder_threshold","last_ordered","notes"]].concat(supplies.map(s => [s.name,s.category,s.unit,s.qtyOnHand,s.reorderThreshold,s.lastOrdered,s.notes]))
+  ));
+
+  async function downloadCsv(filename, rows) {
+    const downloads = await claude.use("downloads");
+    const content = toCsv(rows);
+    if (!downloads) {
+      const blob = new Blob([content], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+      return;
+    }
+    try { await downloads.save({ filename, data: content }); }
+    catch (err) { if (err && err.code !== "declined") alert("Couldn't save file: " + (err.message || err)); }
+  }
+
+  // ---------- db wiring ----------
+  function setSync(ok) {
+    $("#syncStatus").innerHTML = `<span class="sync-dot ${ok ? "" : "off"}"></span>${ok ? "synced" : "no live sync — changes won't be saved"}`;
+  }
+
+  async function boot() {
+    db = await (window.claude ? claude.use("db") : Promise.resolve(null));
+    if (!db) { setSync(false); renderDashboard(); renderCheckinHistory(); renderMeds(); renderChangeHistory(); renderSupplies(); return; }
+    setSync(true);
+
+    db.collection("checkins").onSnapshot(snap => {
+      checkins = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderDashboard(); renderCheckinHistory();
+      if (!$("#tab-report").hidden) renderReport();
+    }, () => setSync(false));
+
+    db.collection("medications").onSnapshot(snap => {
+      medications = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a,b) => a.name.localeCompare(b.name));
+      renderDashboard(); renderMeds();
+      if (!$("#tab-report").hidden) renderReport();
+    }, () => setSync(false));
+
+    db.collection("medChanges").onSnapshot(snap => {
+      medChanges = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderChangeHistory();
+      if (!$("#tab-report").hidden) renderReport();
+    }, () => setSync(false));
+
+    db.collection("supplies").onSnapshot(snap => {
+      supplies = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderDashboard(); renderSupplies();
+      if (!$("#tab-report").hidden) renderReport();
+    }, () => setSync(false));
+  }
+
+  boot();
+})();
+</script>
