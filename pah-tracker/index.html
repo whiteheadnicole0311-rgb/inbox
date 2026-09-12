@@ -219,11 +219,25 @@
   .range-row .rv { width: 22px; text-align: right; font-weight: 700; }
 
   @media print {
-    header.top, nav.tabs, .no-print { display: none !important; }
+    body:not(.printing-label) header.top, body:not(.printing-label) nav.tabs, body:not(.printing-label) .no-print { display: none !important; }
     body { background: #fff; color: #000; }
     .wrap { max-width: 100%; padding: 0; }
-    section.tab:not(#tab-report) { display: none !important; }
+    body:not(.printing-label) section.tab:not(#tab-report) { display: none !important; }
     .card { box-shadow: none; border: 1px solid #ccc; }
+  }
+
+  #labelPrintArea { position: absolute; left: -9999px; top: -9999px; width: 4in; }
+  .label-sheet {
+    width: 4in; height: 2in; box-sizing: border-box; padding: 0.12in;
+    font-family: 'Inter', system-ui, sans-serif; color: #000; background: #fff;
+    font-size: 6.6pt; line-height: 1.28;
+  }
+  .label-sheet .l-title { font-weight: 700; font-size: 7.6pt; margin-bottom: 2px; }
+  .label-sheet .l-row { display: flex; justify-content: space-between; gap: 6px; }
+  .label-sheet .l-call { font-weight: 700; margin-top: 3px; }
+  @media print {
+    body.printing-label .wrap, body.printing-label dialog { display: none !important; }
+    body.printing-label #labelPrintArea { position: static; left: auto; top: auto; }
   }
 </style>
 
@@ -244,6 +258,8 @@
       <button data-tab="checkin">Check-in</button>
       <button data-tab="meds">Medications</button>
       <button data-tab="supplies">Supplies</button>
+      <button data-tab="labs">Labs &amp; Tests</button>
+      <button data-tab="events">Events</button>
       <button data-tab="report">Report</button>
     </nav>
   </header>
@@ -296,17 +312,24 @@
           </div>
         </div>
 
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Weight</h2></div>
+        <div class="grid cols-3">
+          <div class="field"><label for="ci-weight">Weight (lb)</label><input type="number" id="ci-weight" min="0" step="0.1"></div>
+          <div class="field" style="grid-column: span 2; align-self: end;">
+            <div class="hint" id="ci-weight-delta">Log a weight to see the change from your last entry.</div>
+          </div>
+        </div>
+
         <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Vitals</h2></div>
         <div class="grid cols-4">
           <div class="field"><label for="ci-o2rest">O₂ sat, rest (%)</label><input type="number" id="ci-o2rest" min="0" max="100"></div>
           <div class="field"><label for="ci-o2ex">O₂ sat, exertion (%)</label><input type="number" id="ci-o2ex" min="0" max="100"></div>
           <div class="field"><label for="ci-hr">Heart rate (bpm)</label><input type="number" id="ci-hr" min="0"></div>
-          <div class="field"><label for="ci-weight">Weight (lb)</label><input type="number" id="ci-weight" min="0" step="0.1"></div>
           <div class="field"><label for="ci-bpsys">BP systolic</label><input type="number" id="ci-bpsys" min="0"></div>
           <div class="field"><label for="ci-bpdia">BP diastolic</label><input type="number" id="ci-bpdia" min="0"></div>
         </div>
 
-        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Symptoms</h2></div>
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Breathing &amp; heart symptoms</h2></div>
         <div class="grid cols-2">
           <div class="field">
             <label for="ci-dyspnea">Shortness of breath (0 none – 10 severe)</label>
@@ -316,19 +339,52 @@
             <label for="ci-fatigue">Fatigue (0 none – 10 severe)</label>
             <div class="range-row"><input type="range" id="ci-fatigue" min="0" max="10" value="0"><span class="rv tabular" id="ci-fatigue-v">0</span></div>
           </div>
+        </div>
+        <div class="grid cols-3">
+          <div class="checkrow"><input type="checkbox" id="ci-chestpain"><label for="ci-chestpain">Chest pain</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-palpitations"><label for="ci-palpitations">Palpitations</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-dizziness"><label for="ci-dizziness">Dizziness / lightheadedness</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-syncope"><label for="ci-syncope">Fainting / near-fainting (syncope)</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-orthopnea"><label for="ci-orthopnea">Needs extra pillows to breathe (orthopnea)</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-cough"><label for="ci-cough">New or worse cough</label></div>
+        </div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Fluid overload signs</h2></div>
+        <div class="grid cols-2">
           <div class="field">
             <label for="ci-edema">Swelling / edema</label>
             <select id="ci-edema"><option value="none">None</option><option value="mild">Mild</option><option value="moderate">Moderate</option><option value="severe">Severe</option></select>
           </div>
           <div class="field">
             <label for="ci-edemaLoc">Location (if any)</label>
-            <input type="text" id="ci-edemaLoc" placeholder="e.g. ankles, abdomen">
+            <input type="text" id="ci-edemaLoc" placeholder="e.g. ankles, legs, abdomen">
           </div>
         </div>
-        <div class="grid cols-3">
-          <div class="checkrow"><input type="checkbox" id="ci-chestpain"><label for="ci-chestpain">Chest pain</label></div>
-          <div class="checkrow"><input type="checkbox" id="ci-dizziness"><label for="ci-dizziness">Dizziness / lightheadedness</label></div>
-          <div class="checkrow"><input type="checkbox" id="ci-palpitations"><label for="ci-palpitations">Palpitations</label></div>
+        <div class="checkrow"><input type="checkbox" id="ci-bloating"><label for="ci-bloating">Increased abdominal girth / bloating</label></div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Medications taken today</h2></div>
+        <div id="ci-medsTaken" class="grid cols-2"></div>
+        <div class="field" style="margin-top:10px;">
+          <label for="ci-medsNotes">Missed or changed doses</label>
+          <input type="text" id="ci-medsNotes" placeholder="e.g. skipped evening Adcirca dose">
+        </div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Activity &amp; life</h2></div>
+        <div class="grid cols-2">
+          <div class="field">
+            <label for="ci-activity">Activity level today</label>
+            <select id="ci-activity">
+              <option value="">—</option>
+              <option value="normal">Normal / usual activity</option>
+              <option value="reduced">Reduced — cut activities short</option>
+              <option value="resting">Mostly resting</option>
+              <option value="bedbound">Bedbound</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ci-lifeNotes">Notes on daily life</label>
+            <input type="text" id="ci-lifeNotes" placeholder="energy, mood, work, exercise attempted…">
+          </div>
         </div>
 
         <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Infusion &amp; site</h2></div>
@@ -368,6 +424,43 @@
   <section class="tab" id="tab-meds" hidden>
     <div class="section-title"><h2>Current medications</h2><button class="btn primary sm" id="btnAddMed">+ Add medication</button></div>
     <div class="grid cols-2" id="medsList"></div>
+
+    <div class="section-title" style="margin-top:28px;"><h2>Remodulin mixing &amp; titration</h2></div>
+    <p class="muted small" style="margin-top:-6px;">Enter today's mix and dose to calculate the pump rate and cassette label — update this each time the dose titrates.</p>
+    <div class="card">
+      <div class="grid cols-2">
+        <div class="field"><label for="pt-name">Patient name</label><input type="text" id="pt-name" placeholder="For the cassette label"></div>
+        <div class="field"><label for="pt-prescriber">Prescriber name</label><input type="text" id="pt-prescriber" placeholder="For the cassette label"></div>
+      </div>
+      <form id="titrationForm">
+        <div class="grid cols-4">
+          <div class="field"><label for="tt-date">Date</label><input type="date" id="tt-date" required></div>
+          <div class="field"><label for="tt-weight">Dosing weight (kg)</label><input type="number" id="tt-weight" min="0" step="0.1" required></div>
+          <div class="field"><label for="tt-dose">Dose (ng/kg/min)</label><input type="number" id="tt-dose" min="0" step="0.1" required></div>
+          <div class="field"><label for="tt-conc">Mixed concentration (ng/mL)</label><input type="number" id="tt-conc" min="0" step="0.1" required></div>
+          <div class="field">
+            <label for="tt-vial">Vial strength (mg/mL)</label>
+            <select id="tt-vial">
+              <option value="1">1 mg/mL</option>
+              <option value="2.5">2.5 mg/mL</option>
+              <option value="5">5 mg/mL</option>
+              <option value="10">10 mg/mL</option>
+            </select>
+          </div>
+          <div class="field"><label for="tt-volume">Total cassette volume (mL)</label><input type="number" id="tt-volume" min="1" step="1" value="100"></div>
+          <div class="field" style="grid-column: span 2;"><label for="tt-reason">Reason for this titration</label><input type="text" id="tt-reason" placeholder="e.g. scheduled up-titration, breakthrough symptoms"></div>
+        </div>
+        <div class="field"><label for="tt-notes">Notes</label><input type="text" id="tt-notes" placeholder="Ordered by, tolerance, side effects…"></div>
+        <div id="tt-preview" class="grid cols-4" style="margin: 4px 0 14px;"></div>
+        <button type="submit" class="btn primary">Save titration</button>
+      </form>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;"><h2>Titration history</h2></div>
+    <div class="card" id="titrationHistory"></div>
+
+    <div class="section-title" style="margin-top:28px;"><h2>Print a cassette label</h2></div>
+    <div class="card" id="labelCard"></div>
 
     <div class="section-title" style="margin-top:28px;"><h2>Log a dose or medication change</h2></div>
     <div class="card">
@@ -424,6 +517,49 @@
     </div>
   </section>
 
+  <!-- LABS & TESTS -->
+  <section class="tab" id="tab-labs" hidden>
+    <p class="muted small">A place to keep the numbers your care team asks about between visits.</p>
+    <div id="labsGroups"></div>
+  </section>
+
+  <!-- EVENTS -->
+  <section class="tab" id="tab-events" hidden>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:18px;">Log an event</h2>
+      <form id="eventForm">
+        <input type="hidden" id="ev-id">
+        <div class="grid cols-3">
+          <div class="field">
+            <label for="ev-type">Type</label>
+            <select id="ev-type">
+              <option>Hospitalization</option>
+              <option>ER visit</option>
+              <option>Fall</option>
+              <option>Infection</option>
+              <option>Pump malfunction</option>
+              <option>Line / site complication</option>
+              <option>Travel</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label for="ev-start">Start date</label><input type="date" id="ev-start" required></div>
+          <div class="field"><label for="ev-end">End date <span class="hint" style="display:inline;">(if resolved)</span></label><input type="date" id="ev-end"></div>
+        </div>
+        <div class="field"><label for="ev-location">Location / facility</label><input type="text" id="ev-location" placeholder="Hospital name, ER, home…"></div>
+        <div class="field"><label for="ev-description">What happened</label><textarea id="ev-description" placeholder="Reason, symptoms leading up to it, treatment given…"></textarea></div>
+        <div class="field"><label for="ev-outcome">Outcome / follow-up</label><textarea id="ev-outcome" placeholder="Discharge instructions, medication changes, next steps…"></textarea></div>
+        <div style="display:flex; gap:8px;">
+          <button type="submit" class="btn primary">Save event</button>
+          <button type="button" class="btn ghost" id="ev-cancel" hidden>Cancel edit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-title"><h2>Event history</h2></div>
+    <div class="card" id="eventHistory"></div>
+  </section>
+
   <!-- REPORT -->
   <section class="tab" id="tab-report" hidden>
     <div class="card no-print">
@@ -443,6 +579,8 @@
     <div id="reportBody" style="margin-top:16px;"></div>
   </section>
 </div>
+
+<div id="labelPrintArea" aria-hidden="true"></div>
 
 <dialog id="formModal">
   <div class="modal-head"><h3 id="modalTitle">Medication</h3><button class="icon-btn" id="modalClose" aria-label="Close">✕</button></div>
@@ -489,9 +627,11 @@
   $("#todayDate").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   $("#ci-date").value = todayStr();
   $("#ch-date").value = todayStr();
+  $("#tt-date").value = todayStr();
+  $("#ev-start").value = todayStr();
 
   // ---------- tabs ----------
-  const tabs = ["dashboard","checkin","meds","supplies","report"];
+  const tabs = ["dashboard","checkin","meds","supplies","labs","events","report"];
   function showTab(name) {
     tabs.forEach(t => { $("#tab-" + t).hidden = t !== name; });
     $$("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
@@ -512,6 +652,10 @@
   let medications = [];
   let medChanges = [];
   let supplies = [];
+  let titrations = [];
+  let labs = [];
+  let events = [];
+  let profile = {};
 
   const CATEGORY_ORDER = ["Medication", "Infusion & pump", "Site care & dressing", "PPE", "Other"];
 
@@ -519,22 +663,44 @@
     {
       id: "dressing",
       name: "Dressing Change Packet",
-      items: ["sterile-drape", "alcohol-wipes", "iv3000-dressing", "2n8399-iv-valve-baxter", "gloves-sterile", "brava-adhesive-remover-wipe", "biopatch", "dressing-change-kit", "aquaguard-shower-cover"],
+      items: [
+        { id: "sterile-drape", qty: 1 },
+        { id: "alcohol-wipes", qty: 6 },
+        { id: "iv3000-dressing", qty: 1 },
+        { id: "2n8399-iv-valve-baxter", qty: 1 },
+        { id: "gloves-sterile", qty: 1 },
+        { id: "brava-adhesive-remover-wipe", qty: 2 },
+        { id: "biopatch", qty: 1 },
+        { id: "dressing-change-kit", qty: 1 },
+        { id: "aquaguard-shower-cover", qty: 3 },
+      ],
     },
     {
       id: "cassette",
       name: "Cassette Change Packet",
-      items: ["sterile-drape", "remodulin", "50ml-syringe", "alcohol-wipes", "20mm-vial-spike-cap", "10ml-syringe", "cassette", "line", "aa-batteries", "sterile-diluent", "gloves-non-sterile"],
+      items: [
+        { id: "sterile-drape", qty: 1 },
+        { id: "50ml-syringe", qty: 2 },
+        { id: "alcohol-wipes", qty: 6 },
+        { id: "20mm-vial-spike-cap", qty: 2 },
+        { id: "10ml-syringe", qty: 2 },
+        { id: "cassette", qty: 1 },
+        { id: "line", qty: 1 },
+        { id: "aa-batteries", qty: 4 },
+        { id: "sterile-diluent", qty: 2 },
+        { id: "gloves-non-sterile", qty: 1 },
+      ],
     },
   ];
 
   function packetStatus(packet) {
-    const components = packet.items.map(id => {
-      const s = supplies.find(x => x.id === id);
-      return { id, name: s ? s.name : id, qty: s ? (s.qtyOnHand || 0) : 0, missing: !s };
+    const components = packet.items.map(it => {
+      const s = supplies.find(x => x.id === it.id);
+      const qty = s ? (s.qtyOnHand || 0) : 0;
+      return { id: it.id, name: s ? s.name : it.id, need: it.qty, qty, possible: Math.floor(qty / it.qty), missing: !s };
     });
-    let ready = components.length ? Math.min(...components.map(c => c.qty)) : 0;
-    const limiting = components.filter(c => c.qty === ready);
+    let ready = components.length ? Math.min(...components.map(c => c.possible)) : 0;
+    const limiting = components.filter(c => c.possible === ready);
     return { ready, limiting, components };
   }
 
@@ -602,15 +768,56 @@
   }
 
   // ---------- checkins ----------
+  function priorWeightEntry(dateStr, excludeId) {
+    return checkins
+      .filter(c => c.id !== excludeId && c.weight != null && c.date < dateStr)
+      .sort((a, b) => (a.date < b.date ? 1 : -1))[0] || null;
+  }
+
+  function updateWeightDelta() {
+    const dateStr = $("#ci-date").value || todayStr();
+    const weight = num("#ci-weight");
+    const el = $("#ci-weight-delta");
+    if (weight == null) { el.textContent = "Log a weight to see the change from your last entry."; el.style.color = ""; return; }
+    const prior = priorWeightEntry(dateStr, $("#ci-id").value || null);
+    if (!prior) { el.textContent = "No earlier weight logged yet to compare against."; el.style.color = ""; return; }
+    const days = Math.max(1, Math.round((new Date(dateStr) - new Date(prior.date)) / 86400000));
+    const delta = weight - prior.weight;
+    const sign = delta > 0 ? "+" : "";
+    let txt = `${sign}${delta.toFixed(1)} lb since ${fmtDate(prior.date)} (${days} day${days>1?"s":""} ago)`;
+    const rapid = (days <= 1 && delta >= 2) || (days <= 3 && delta >= 3) || (days <= 7 && delta >= 5);
+    if (rapid && delta > 0) {
+      txt += " — rapid gain; possible fluid retention, consider flagging to your care team";
+      el.style.color = "var(--coral)";
+    } else {
+      el.style.color = "";
+    }
+    el.textContent = txt;
+  }
+  $("#ci-weight").addEventListener("input", updateWeightDelta);
+  $("#ci-date").addEventListener("change", updateWeightDelta);
+
+  function renderCheckinMedsTaken(checkedMap) {
+    const active = medications.filter(m => m.active !== false);
+    $("#ci-medsTaken").innerHTML = active.length ? active.map(m => `
+      <div class="checkrow"><input type="checkbox" class="ci-medtaken" data-med-id="${esc(m.id)}" data-med-name="${esc(m.name)}" ${!checkedMap || checkedMap[m.id] !== false ? "checked" : ""}>
+      <label>${esc(m.name)} ${m.dose ? `<span class="muted">(${esc(m.dose)} ${esc(m.doseUnit||"")})</span>` : ""}</label></div>
+    `).join("") : `<p class="muted small">No active medications listed yet — add them on this tab first.</p>`;
+  }
+
   function checkinRowHtml(c, withActions) {
     const badges = [];
     if (c.whoClass) badges.push(`<span class="badge neutral">WHO ${esc(c.whoClass)}</span>`);
     if (c.dyspnea >= 7) badges.push(`<span class="badge crit">SOB ${c.dyspnea}/10</span>`);
     else if (c.dyspnea >= 4) badges.push(`<span class="badge warn">SOB ${c.dyspnea}/10</span>`);
     if (c.edema && c.edema !== "none") badges.push(`<span class="badge ${c.edema==='severe'?'crit':'warn'}">edema: ${esc(c.edema)}</span>`);
+    if (c.bloating) badges.push(`<span class="badge warn">bloating</span>`);
     if (c.chestPain) badges.push(`<span class="badge crit">chest pain</span>`);
+    if (c.syncope) badges.push(`<span class="badge crit">syncope</span>`);
+    if (c.orthopnea) badges.push(`<span class="badge warn">orthopnea</span>`);
     if ((c.siteIssues||[]).length) badges.push(`<span class="badge warn">site: ${esc(c.siteIssues.join(", "))}</span>`);
     if (c.pumpAlarm) badges.push(`<span class="badge crit">pump alarm</span>`);
+    if (c.activity === "resting" || c.activity === "bedbound") badges.push(`<span class="badge warn">activity: ${esc(c.activity)}</span>`);
     return `<div class="entry-row">
       <div>
         <b>${esc(fmtDate(c.date))}</b>
@@ -628,6 +835,8 @@
   }
 
   function readCheckinForm() {
+    const medsTaken = {};
+    $$(".ci-medtaken").forEach(cb => { medsTaken[cb.dataset.medId] = cb.checked; });
     return {
       date: $("#ci-date").value || todayStr(),
       whoClass: $("#ci-whoClass").value,
@@ -640,11 +849,19 @@
       weight: num("#ci-weight"),
       dyspnea: Number($("#ci-dyspnea").value),
       fatigue: Number($("#ci-fatigue").value),
+      orthopnea: $("#ci-orthopnea").checked,
+      cough: $("#ci-cough").checked,
       edema: $("#ci-edema").value,
       edemaLocation: $("#ci-edemaLoc").value.trim(),
+      bloating: $("#ci-bloating").checked,
       chestPain: $("#ci-chestpain").checked,
       dizziness: $("#ci-dizziness").checked,
+      syncope: $("#ci-syncope").checked,
       palpitations: $("#ci-palpitations").checked,
+      medsTaken,
+      medsNotes: $("#ci-medsNotes").value.trim(),
+      activity: $("#ci-activity").value,
+      lifeNotes: $("#ci-lifeNotes").value.trim(),
       siteIssues: $$(".ci-site:checked").map(c => c.value),
       pumpAlarm: $("#ci-pumpalarm").checked,
       pumpNotes: $("#ci-pumpNotes").value.trim(),
@@ -659,6 +876,8 @@
     $("#ci-dyspnea-v").textContent = "0";
     $("#ci-fatigue-v").textContent = "0";
     $("#ci-cancel").hidden = true;
+    renderCheckinMedsTaken(null);
+    updateWeightDelta();
   }
 
   $("#ci-dyspnea").addEventListener("input", e => $("#ci-dyspnea-v").textContent = e.target.value);
@@ -695,17 +914,26 @@
       $("#ci-weight").value = c.weight ?? "";
       $("#ci-dyspnea").value = c.dyspnea || 0; $("#ci-dyspnea-v").textContent = c.dyspnea || 0;
       $("#ci-fatigue").value = c.fatigue || 0; $("#ci-fatigue-v").textContent = c.fatigue || 0;
+      $("#ci-orthopnea").checked = !!c.orthopnea;
+      $("#ci-cough").checked = !!c.cough;
       $("#ci-edema").value = c.edema || "none";
       $("#ci-edemaLoc").value = c.edemaLocation || "";
+      $("#ci-bloating").checked = !!c.bloating;
       $("#ci-chestpain").checked = !!c.chestPain;
       $("#ci-dizziness").checked = !!c.dizziness;
+      $("#ci-syncope").checked = !!c.syncope;
       $("#ci-palpitations").checked = !!c.palpitations;
+      renderCheckinMedsTaken(c.medsTaken || null);
+      $("#ci-medsNotes").value = c.medsNotes || "";
+      $("#ci-activity").value = c.activity || "";
+      $("#ci-lifeNotes").value = c.lifeNotes || "";
       $$(".ci-site").forEach(cb => cb.checked = (c.siteIssues||[]).includes(cb.value));
       $("#ci-pumpalarm").checked = !!c.pumpAlarm;
       $("#ci-pumpNotes").value = c.pumpNotes || "";
       $("#ci-notes").value = c.notes || "";
       $("#ci-cancel").hidden = false;
       showTab("checkin");
+      updateWeightDelta();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (delBtn) {
       if (confirm("Delete this check-in?") && db) {
@@ -777,8 +1005,6 @@
     $("#formModal").showModal();
   }
 
-  function openSupplyEditModal() {} // reserved
-
   $("#medsList").addEventListener("click", (e) => {
     const editBtn = e.target.closest("[data-edit-med]");
     const delBtn = e.target.closest("[data-del-med]");
@@ -846,8 +1072,187 @@
         else await db.collection("medications").add(data);
         modal.close();
       } catch (err) { alert(err.message); }
+    } else if (modal.dataset.mode === "lab") {
+      const data = {
+        category: modal.dataset.category,
+        date: $("#lb-date").value || todayStr(),
+        testName: $("#lb-testName").value.trim(),
+        result: $("#lb-result").value.trim(),
+        notes: $("#lb-notes").value.trim(),
+        flagged: $("#lb-flagged").checked,
+      };
+      $$(".lab-metric").forEach(inp => { if (inp.value !== "") data[inp.dataset.key] = Number(inp.value); });
+      try {
+        if (modal.dataset.id) await db.collection("labs").doc(modal.dataset.id).set(data);
+        else await db.collection("labs").add(data);
+        modal.close();
+      } catch (err) { alert(err.message); }
     }
   });
+
+  // ---------- Remodulin titration, profile & cassette label ----------
+  function saveProfile() {
+    if (!db) return;
+    profile = Object.assign({}, profile, { patientName: $("#pt-name").value.trim(), prescriberName: $("#pt-prescriber").value.trim() });
+    db.doc("profile/main").set(profile).catch(err => alert(err.message));
+  }
+  $("#pt-name").addEventListener("change", saveProfile);
+  $("#pt-prescriber").addEventListener("change", saveProfile);
+
+  function computeTitration({ weightKg, doseNgKgMin, concNgMl, vialMgMl, volumeMl }) {
+    if (!weightKg || !doseNgKgMin || !concNgMl || !vialMgMl || !volumeMl) return null;
+    const rateMlHr = (doseNgKgMin * weightKg * 60) / concNgMl;
+    const remodulinMl = (concNgMl * volumeMl / 1e6) / vialMgMl;
+    const diluentMl = volumeMl - remodulinMl;
+    const hours = volumeMl / rateMlHr;
+    if (!isFinite(rateMlHr) || !isFinite(hours) || diluentMl < 0) return null;
+    return { rateMlHr, remodulinMl, diluentMl, hours };
+  }
+
+  function readTitrationInputs() {
+    return {
+      weightKg: num("#tt-weight"),
+      doseNgKgMin: num("#tt-dose"),
+      concNgMl: num("#tt-conc"),
+      vialMgMl: Number($("#tt-vial").value),
+      volumeMl: num("#tt-volume") || 100,
+    };
+  }
+
+  function updateTitrationPreview() {
+    const r = computeTitration(readTitrationInputs());
+    $("#tt-preview").innerHTML = r ? [
+      { label: "Remodulin", value: r.remodulinMl.toFixed(2) + " mL" },
+      { label: "Diluent", value: r.diluentMl.toFixed(2) + " mL" },
+      { label: "Pump rate", value: r.rateMlHr.toFixed(3) + " mL/hr" },
+      { label: "Cassette lasts", value: r.hours.toFixed(1) + " hr" },
+    ].map(s => `<div class="stat"><span class="label">${esc(s.label)}</span><span class="value tabular" style="font-size:18px;">${esc(s.value)}</span></div>`).join("")
+      : `<p class="muted small" style="grid-column: 1 / -1;">Fill in weight, dose, concentration, vial strength, and volume to see the calculated mix and pump rate.</p>`;
+  }
+  ["#tt-weight", "#tt-dose", "#tt-conc", "#tt-volume"].forEach(sel => $(sel).addEventListener("input", updateTitrationPreview));
+  $("#tt-vial").addEventListener("change", updateTitrationPreview);
+  updateTitrationPreview();
+
+  $("#titrationForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const input = readTitrationInputs();
+    const r = computeTitration(input);
+    if (!r) { alert("Enter a valid weight, dose, concentration, vial strength, and volume first."); return; }
+    const data = Object.assign({
+      date: $("#tt-date").value || todayStr(),
+      reason: $("#tt-reason").value.trim(),
+      notes: $("#tt-notes").value.trim(),
+      createdAt: new Date().toISOString(),
+    }, input, { rateMlHr: r.rateMlHr, remodulinMl: r.remodulinMl, diluentMl: r.diluentMl, hours: r.hours });
+    try {
+      await db.collection("titrations").add(data);
+      $("#tt-reason").value = "";
+      $("#tt-notes").value = "";
+      $("#tt-date").value = todayStr();
+    } catch (err) { alert("Couldn't save titration: " + err.message); }
+  });
+
+  function renderTitrationHistory() {
+    const sorted = titrations.slice().sort((a,b) => a.date < b.date ? 1 : -1);
+    $("#titrationHistory").innerHTML = sorted.length ? `<div class="table-scroll"><table>
+      <thead><tr><th>Date</th><th>Weight</th><th>Dose</th><th>Conc.</th><th>Rate</th><th>Duration</th><th>Reason</th><th></th></tr></thead>
+      <tbody>${sorted.map(t => `<tr>
+        <td class="tabular">${esc(fmtDate(t.date))}</td>
+        <td class="tabular">${esc(t.weightKg)} kg</td>
+        <td class="tabular">${esc(t.doseNgKgMin)} ng/kg/min</td>
+        <td class="tabular">${esc(t.concNgMl)} ng/mL</td>
+        <td class="tabular">${t.rateMlHr!=null ? t.rateMlHr.toFixed(3) : ""} mL/hr</td>
+        <td class="tabular">${t.hours!=null ? t.hours.toFixed(1) : ""} hr</td>
+        <td>${esc(t.reason||"")}</td>
+        <td><button class="btn danger sm" data-del-titration="${t.id}">Delete</button></td>
+      </tr>`).join("")}</tbody></table></div>` : `<div class="empty small">No titrations logged yet — enter your current mix above to start tracking dose changes.</div>`;
+  }
+  $("#titrationHistory").addEventListener("click", (e) => {
+    const del = e.target.closest("[data-del-titration]");
+    if (del && db) db.collection("titrations").doc(del.dataset.delTitration).delete().catch(err => alert(err.message));
+  });
+
+  function currentTitration() {
+    if (!titrations.length) return null;
+    return titrations.slice().sort((a,b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (a.createdAt||"") < (b.createdAt||"") ? 1 : -1;
+    })[0];
+  }
+
+  function nowTimeStr() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+
+  function renderLabelCard() {
+    const card = $("#labelCard");
+    const cur = currentTitration();
+    const existingDate = $("#lbl-dateMixed") ? $("#lbl-dateMixed").value : todayStr();
+    const existingTime = $("#lbl-timeMixed") ? $("#lbl-timeMixed").value : nowTimeStr();
+    if (!cur) {
+      card.innerHTML = `<p class="muted small">Save a titration above first — the label pulls its dose, weight, and mix from your latest entry.</p>`;
+      return;
+    }
+    card.innerHTML = `
+      <div class="grid cols-3">
+        <div class="field"><label for="lbl-dateMixed">Date mixed</label><input type="date" id="lbl-dateMixed" value="${esc(existingDate)}"></div>
+        <div class="field"><label for="lbl-timeMixed">Time mixed</label><input type="time" id="lbl-timeMixed" value="${esc(existingTime)}"></div>
+        <div class="field" style="align-self:end;"><button type="button" class="btn primary" id="btnPrintLabel">Print label (2×4in)</button></div>
+      </div>
+      <p class="small muted">Using latest titration from ${esc(fmtDate(cur.date))}: ${esc(cur.doseNgKgMin)} ng/kg/min at ${esc(cur.concNgMl)} ng/mL, ${esc(cur.weightKg)} kg dosing weight.</p>
+    `;
+  }
+  $("#labelCard").addEventListener("click", (e) => {
+    if (e.target.closest("#btnPrintLabel")) printCassetteLabel();
+  });
+
+  function buildLabelHtml() {
+    const cur = currentTitration();
+    if (!cur) return "";
+    const dateMixed = $("#lbl-dateMixed") ? $("#lbl-dateMixed").value : todayStr();
+    const timeMixed = $("#lbl-timeMixed") ? $("#lbl-timeMixed").value : nowTimeStr();
+    let useBy = "";
+    if (dateMixed && timeMixed && cur.hours) {
+      const start = new Date(dateMixed + "T" + timeMixed);
+      const end = new Date(start.getTime() + cur.hours * 3600000);
+      useBy = end.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+    const patientName = ($("#pt-name").value || profile.patientName || "").trim();
+    const prescriberName = ($("#pt-prescriber").value || profile.prescriberName || "").trim();
+    return `
+      <div class="label-sheet">
+        <div class="l-title">Continuous IV Infusion — Remodulin ${esc(cur.concNgMl)} ng/mL in ${esc(cur.volumeMl)}mL diluent</div>
+        <div class="l-row"><span>Date Mixed: <b>${esc(fmtDate(dateMixed))}</b></span><span>Time Mixed: <b>${esc(timeMixed)}</b></span></div>
+        <div>Patient Name: <b>${esc(patientName) || "_______________"}</b></div>
+        <div>Remodulin Dosage: <b>${esc(cur.doseNgKgMin)} ng/kg/min</b></div>
+        <div>${esc(cur.remodulinMl.toFixed(2))} mLs of ${esc(cur.vialMgMl)} mg/mL in total of ${esc(cur.volumeMl)}mL Sterile Diluent</div>
+        <div>CADD-Solis VIP Infusion Pump rate at <b>${esc(cur.rateMlHr.toFixed(3))} mL/hr</b></div>
+        <div class="l-row"><span>Dosing weight: <b>${esc(cur.weightKg)} kg</b></span><span>Cassette lasts: <b>${esc(cur.hours.toFixed(1))} hrs</b></span></div>
+        <div>Use by Date: <b>${esc(useBy)}</b></div>
+        <div class="l-call">Healthcare Providers, questions: PLEASE CALL 866.344.4874</div>
+        <div>Prescriber Name: <b>${esc(prescriberName) || "_______________"}</b></div>
+      </div>
+    `;
+  }
+
+  function printCassetteLabel() {
+    const html = buildLabelHtml();
+    if (!html) return;
+    $("#labelPrintArea").innerHTML = html;
+    document.body.classList.add("printing-label");
+    const styleEl = document.createElement("style");
+    styleEl.textContent = "@page { size: 4in 2in; margin: 0; }";
+    document.head.appendChild(styleEl);
+    const cleanup = () => {
+      document.body.classList.remove("printing-label");
+      styleEl.remove();
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    window.print();
+  }
 
   // ---------- supplies ----------
   function supplyCardHtml(s) {
@@ -889,7 +1294,7 @@
         <details style="margin-top:8px;">
           <summary class="small" style="cursor:pointer;color:var(--slate);">Components (${p.items.length})</summary>
           <ul class="small" style="margin:8px 0 0; padding-left:18px;">
-            ${st.components.map(c => `<li>${esc(c.name)}: <span class="tabular">${c.qty}</span>${c.missing ? ' <span class="badge neutral">not tracked</span>' : ""}</li>`).join("")}
+            ${st.components.map(c => `<li>${esc(c.name)}: <span class="tabular">${c.qty}</span> on hand ÷ ${c.need}/packet = <span class="tabular">${c.possible}</span>${c.missing ? ' <span class="badge neutral">not tracked</span>' : ""}</li>`).join("")}
           </ul>
         </details>
       </div>`;
@@ -962,6 +1367,144 @@
       $("#sp-unit").value = "each";
       $("#sp-threshold").value = "1";
     } catch (err) { alert("Couldn't add supply: " + err.message); }
+  });
+
+  // ---------- labs & tests ----------
+  const LAB_CATEGORIES = [
+    { id: "bloodwork", name: "Blood Work", fields: [] },
+    { id: "echo", name: "Echo Results", fields: [ { key: "rvsp", label: "RVSP (mmHg)" }, { key: "tapse", label: "TAPSE (cm)" } ] },
+    { id: "rhc", name: "Right Heart Cath", fields: [ { key: "mpap", label: "mPAP (mmHg)" }, { key: "pcwp", label: "PCWP (mmHg)" }, { key: "pvr", label: "PVR (WU)" }, { key: "ci", label: "Cardiac Index (L/min/m²)" }, { key: "rap", label: "RAP (mmHg)" } ] },
+    { id: "functional", name: "Functional Tests", fields: [] },
+    { id: "imaging", name: "Imaging Studies", fields: [] },
+  ];
+
+  function labEntryHtml(l, cat) {
+    const metrics = (cat.fields||[]).filter(f => l[f.key] != null && l[f.key] !== "").map(f => `<span class="badge neutral tabular">${esc(f.label)}: ${esc(l[f.key])}</span>`).join(" ");
+    return `<div class="entry-row">
+      <div>
+        <b>${esc(fmtDate(l.date))}</b>${l.testName ? " · " + esc(l.testName) : ""} ${l.flagged ? '<span class="badge crit">flagged</span>' : ""}
+        <div class="entry-meta">${metrics}</div>
+        ${l.result ? `<div class="small" style="margin-top:6px;max-width:60ch;">${esc(l.result)}</div>` : ""}
+        ${l.notes ? `<div class="small muted" style="margin-top:4px;max-width:60ch;">${esc(l.notes)}</div>` : ""}
+      </div>
+      <div class="entry-actions">
+        <button class="btn ghost sm" data-edit-lab="${l.id}">Edit</button>
+        <button class="btn danger sm" data-del-lab="${l.id}">Delete</button>
+      </div>
+    </div>`;
+  }
+
+  function renderLabs() {
+    $("#labsGroups").innerHTML = LAB_CATEGORIES.map(cat => {
+      const entries = labs.filter(l => l.category === cat.id).sort((a,b) => a.date < b.date ? 1 : -1);
+      return `
+        <div class="section-title"><h2 style="font-size:16px;">${esc(cat.name)}</h2><button class="btn primary sm" data-add-lab="${cat.id}">+ Add result</button></div>
+        <div class="card">${entries.length ? entries.map(l => labEntryHtml(l, cat)).join("") : `<div class="empty small">No ${esc(cat.name.toLowerCase())} logged yet.</div>`}</div>
+      `;
+    }).join("");
+  }
+
+  function openLabModal(categoryId, lab) {
+    const cat = LAB_CATEGORIES.find(c => c.id === (lab ? lab.category : categoryId));
+    $("#modalTitle").textContent = (lab ? "Edit " : "Add ") + cat.name.toLowerCase() + " result";
+    const metricFields = (cat.fields||[]).map(f => `
+      <div class="field"><label>${esc(f.label)}</label><input type="number" step="any" class="lab-metric" data-key="${esc(f.key)}" value="${lab && lab[f.key] != null ? esc(lab[f.key]) : ""}"></div>
+    `).join("");
+    $("#modalBody").innerHTML = `
+      <div class="grid cols-2">
+        <div class="field"><label>Date</label><input type="date" id="lb-date" value="${esc(lab?.date || todayStr())}"></div>
+        <div class="field"><label>Test / study name</label><input type="text" id="lb-testName" placeholder="e.g. BNP, TTE, CT chest" value="${esc(lab?.testName||"")}"></div>
+      </div>
+      ${metricFields ? `<div class="grid cols-2">${metricFields}</div>` : ""}
+      <div class="field"><label>Result summary</label><textarea id="lb-result" placeholder="Key values, findings…">${esc(lab?.result||"")}</textarea></div>
+      <div class="field"><label>Notes</label><textarea id="lb-notes" placeholder="Context, follow-up needed…">${esc(lab?.notes||"")}</textarea></div>
+      <div class="checkrow"><input type="checkbox" id="lb-flagged" ${lab?.flagged ? "checked":""}><label for="lb-flagged">Flag as abnormal / notable</label></div>
+    `;
+    $("#formModal").dataset.mode = "lab";
+    $("#formModal").dataset.id = lab?.id || "";
+    $("#formModal").dataset.category = cat.id;
+    $("#formModal").showModal();
+  }
+
+  $("#labsGroups").addEventListener("click", (e) => {
+    const addBtn = e.target.closest("[data-add-lab]");
+    const editBtn = e.target.closest("[data-edit-lab]");
+    const delBtn = e.target.closest("[data-del-lab]");
+    if (addBtn) openLabModal(addBtn.dataset.addLab, null);
+    else if (editBtn) openLabModal(null, labs.find(l => l.id === editBtn.dataset.editLab));
+    else if (delBtn && db) { if (confirm("Delete this result?")) db.collection("labs").doc(delBtn.dataset.delLab).delete().catch(err=>alert(err.message)); }
+  });
+
+  // ---------- events ----------
+  function eventRowHtml(ev) {
+    const dates = ev.endDate && ev.endDate !== ev.startDate ? `${fmtDate(ev.startDate)} – ${fmtDate(ev.endDate)}` : fmtDate(ev.startDate);
+    return `<div class="entry-row">
+      <div>
+        <b>${esc(ev.type)}</b> <span class="muted small">${esc(dates)}</span>
+        ${ev.location ? `<div class="small muted">${esc(ev.location)}</div>` : ""}
+        ${ev.description ? `<div class="small" style="margin-top:6px;max-width:60ch;">${esc(ev.description)}</div>` : ""}
+        ${ev.outcome ? `<div class="small muted" style="margin-top:4px;max-width:60ch;"><b>Outcome:</b> ${esc(ev.outcome)}</div>` : ""}
+      </div>
+      <div class="entry-actions">
+        <button class="btn ghost sm" data-edit-event="${ev.id}">Edit</button>
+        <button class="btn danger sm" data-del-event="${ev.id}">Delete</button>
+      </div>
+    </div>`;
+  }
+
+  function renderEvents() {
+    const sorted = events.slice().sort((a,b) => a.startDate < b.startDate ? 1 : -1);
+    $("#eventHistory").innerHTML = sorted.length ? sorted.map(eventRowHtml).join("") :
+      `<div class="empty"><div class="display">No events logged</div>Hospital stays, ER visits, falls, or anything else out of the ordinary will show up here.</div>`;
+  }
+
+  function resetEventForm() {
+    $("#eventForm").reset();
+    $("#ev-id").value = "";
+    $("#ev-start").value = todayStr();
+    $("#ev-cancel").hidden = true;
+  }
+  $("#ev-cancel").addEventListener("click", resetEventForm);
+
+  $("#eventForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const data = {
+      type: $("#ev-type").value,
+      startDate: $("#ev-start").value || todayStr(),
+      endDate: $("#ev-end").value || "",
+      location: $("#ev-location").value.trim(),
+      description: $("#ev-description").value.trim(),
+      outcome: $("#ev-outcome").value.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    const id = $("#ev-id").value;
+    try {
+      if (id) await db.collection("events").doc(id).set(data);
+      else await db.collection("events").add(data);
+      resetEventForm();
+    } catch (err) { alert("Couldn't save event: " + err.message); }
+  });
+
+  $("#eventHistory").addEventListener("click", (e) => {
+    const editBtn = e.target.closest("[data-edit-event]");
+    const delBtn = e.target.closest("[data-del-event]");
+    if (editBtn) {
+      const ev = events.find(x => x.id === editBtn.dataset.editEvent);
+      if (!ev) return;
+      $("#ev-id").value = ev.id;
+      $("#ev-type").value = ev.type || "Other";
+      $("#ev-start").value = ev.startDate || todayStr();
+      $("#ev-end").value = ev.endDate || "";
+      $("#ev-location").value = ev.location || "";
+      $("#ev-description").value = ev.description || "";
+      $("#ev-outcome").value = ev.outcome || "";
+      $("#ev-cancel").hidden = false;
+      showTab("events");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (delBtn && db) {
+      if (confirm("Delete this event?")) db.collection("events").doc(delBtn.dataset.delEvent).delete().catch(err=>alert(err.message));
+    }
   });
 
   // ---------- report ----------
@@ -1056,7 +1599,12 @@
 
   async function boot() {
     db = await (window.claude ? claude.use("db") : Promise.resolve(null));
-    if (!db) { setSync(false); renderDashboard(); renderCheckinHistory(); renderMeds(); renderChangeHistory(); renderSupplies(); return; }
+    if (!db) {
+      setSync(false);
+      renderDashboard(); renderCheckinHistory(); renderMeds(); renderChangeHistory(); renderSupplies();
+      renderCheckinMedsTaken(null); renderTitrationHistory(); renderLabelCard(); renderLabs(); renderEvents();
+      return;
+    }
     setSync(true);
 
     db.collection("checkins").onSnapshot(snap => {
@@ -1067,7 +1615,10 @@
 
     db.collection("medications").onSnapshot(snap => {
       medications = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a,b) => a.name.localeCompare(b.name));
-      renderDashboard(); renderMeds();
+      renderDashboard(); renderMeds(); renderLabelCard();
+      const currentTaken = {};
+      $$(".ci-medtaken").forEach(cb => { currentTaken[cb.dataset.medId] = cb.checked; });
+      renderCheckinMedsTaken(Object.keys(currentTaken).length ? currentTaken : null);
       if (!$("#tab-report").hidden) renderReport();
     }, () => setSync(false));
 
@@ -1081,6 +1632,27 @@
       supplies = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
       renderDashboard(); renderSupplies();
       if (!$("#tab-report").hidden) renderReport();
+    }, () => setSync(false));
+
+    db.collection("titrations").onSnapshot(snap => {
+      titrations = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderTitrationHistory(); renderLabelCard();
+    }, () => setSync(false));
+
+    db.collection("labs").onSnapshot(snap => {
+      labs = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderLabs();
+    }, () => setSync(false));
+
+    db.collection("events").onSnapshot(snap => {
+      events = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      renderEvents();
+    }, () => setSync(false));
+
+    db.doc("profile/main").onSnapshot(snap => {
+      profile = snap.exists ? snap.data() : {};
+      if (document.activeElement !== $("#pt-name")) $("#pt-name").value = profile.patientName || "";
+      if (document.activeElement !== $("#pt-prescriber")) $("#pt-prescriber").value = profile.prescriberName || "";
     }, () => setSync(false));
   }
 
