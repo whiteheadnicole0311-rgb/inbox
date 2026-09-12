@@ -392,6 +392,11 @@
 
   <!-- SUPPLIES -->
   <section class="tab" id="tab-supplies" hidden>
+    <div class="section-title"><h2>Complete packets on hand</h2></div>
+    <p class="muted small" style="margin-top:-6px;">Built from your loose supply counts below — how many full changes you could do right now.</p>
+    <div class="grid cols-2" id="packetSummary"></div>
+
+    <div class="section-title" style="margin-top:28px;"><h2>Loose supplies</h2></div>
     <div id="supplyAlert"></div>
     <div id="supplyGroups" style="margin-top:14px;"></div>
 
@@ -510,6 +515,29 @@
 
   const CATEGORY_ORDER = ["Medication", "Infusion & pump", "Site care & dressing", "PPE", "Other"];
 
+  const PACKETS = [
+    {
+      id: "dressing",
+      name: "Dressing Change Packet",
+      items: ["sterile-drape", "alcohol-wipes", "iv3000-dressing", "2n8399-iv-valve-baxter", "gloves-sterile", "brava-adhesive-remover-wipe", "biopatch", "dressing-change-kit", "aquaguard-shower-cover"],
+    },
+    {
+      id: "cassette",
+      name: "Cassette Change Packet",
+      items: ["sterile-drape", "remodulin", "50ml-syringe", "alcohol-wipes", "20mm-vial-spike-cap", "10ml-syringe", "cassette", "line", "aa-batteries", "sterile-diluent", "gloves-non-sterile"],
+    },
+  ];
+
+  function packetStatus(packet) {
+    const components = packet.items.map(id => {
+      const s = supplies.find(x => x.id === id);
+      return { id, name: s ? s.name : id, qty: s ? (s.qtyOnHand || 0) : 0, missing: !s };
+    });
+    let ready = components.length ? Math.min(...components.map(c => c.qty)) : 0;
+    const limiting = components.filter(c => c.qty === ready);
+    return { ready, limiting, components };
+  }
+
   // ---------- dashboard ----------
   function statusFor(s) {
     if (s.qtyOnHand <= 0) return "crit";
@@ -562,8 +590,13 @@
     ).join("") : `<div class="empty small">No active medications listed yet.</div>`;
 
     const needReorder = supplies.filter(s => statusFor(s) !== "ok").length;
+    const packetRows = PACKETS.map(p => {
+      const st = packetStatus(p);
+      return `<div class="entry-row"><span>${esc(p.name)}s ready</span><b class="tabular" style="color:${st.ready <= 0 ? 'var(--coral)' : st.ready <= 1 ? 'var(--amber)' : 'var(--teal-deep)'}">${st.ready}</b></div>`;
+    }).join("");
     $("#dashSupplyStatus").innerHTML = `
-      <div class="entry-row"><span>Tracked items</span><b class="tabular">${supplies.length}</b></div>
+      ${packetRows}
+      <div class="entry-row"><span>Loose items tracked</span><b class="tabular">${supplies.length}</b></div>
       <div class="entry-row"><span>Need reorder</span><b class="tabular" style="color:${needReorder ? 'var(--coral)' : 'var(--teal-deep)'}">${needReorder}</b></div>
       <div style="margin-top:10px;"><button class="btn ghost sm" data-goto="supplies">Manage supplies →</button></div>`;
   }
@@ -843,7 +876,28 @@
     </div>`;
   }
 
+  function renderPacketSummary() {
+    $("#packetSummary").innerHTML = PACKETS.map(p => {
+      const st = packetStatus(p);
+      const badgeClass = st.ready <= 0 ? "crit" : st.ready <= 1 ? "warn" : "ok";
+      return `<div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+          <h3 style="margin:0;font-size:15px;">${esc(p.name)}</h3>
+          <span class="badge ${badgeClass} tabular">${st.ready} complete</span>
+        </div>
+        <div class="small muted" style="margin-top:6px;">Limited by ${esc(st.limiting.map(l => l.name).join(", "))} (${st.limiting[0] ? st.limiting[0].qty : 0} on hand)</div>
+        <details style="margin-top:8px;">
+          <summary class="small" style="cursor:pointer;color:var(--slate);">Components (${p.items.length})</summary>
+          <ul class="small" style="margin:8px 0 0; padding-left:18px;">
+            ${st.components.map(c => `<li>${esc(c.name)}: <span class="tabular">${c.qty}</span>${c.missing ? ' <span class="badge neutral">not tracked</span>' : ""}</li>`).join("")}
+          </ul>
+        </details>
+      </div>`;
+    }).join("");
+  }
+
   function renderSupplies() {
+    renderPacketSummary();
     const low = supplies.filter(s => statusFor(s) !== "ok");
     $("#supplyAlert").innerHTML = low.length ? `<div class="alert-banner"><span>⚠️</span><div><b>Reorder from specialty pharmacy:</b> ${esc(low.map(s => s.name + " (" + s.qtyOnHand + " " + (s.unit||"") + ")").join(", "))}</div></div>` : `<div class="badge ok">All tracked supplies are above their reorder point.</div>`;
 
@@ -957,6 +1011,9 @@
           <td class="tabular">${c.dyspnea}</td><td class="tabular">${c.fatigue}</td><td>${esc(c.edema||"")}</td>
           <td>${[c.chestPain&&"chest pain", c.dizziness&&"dizziness", c.palpitations&&"palpitations", c.pumpAlarm&&"pump alarm", (c.siteIssues||[]).join(" ")].filter(Boolean).join(", ")}</td>
         </tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No check-ins in this range.</p>`}</div>
+
+      <div class="section-title"><h2>Complete packets on hand</h2></div>
+      <div class="card"><div class="grid cols-2">${PACKETS.map(p => { const st = packetStatus(p); return `<div class="stat"><span class="label">${esc(p.name)}s</span><span class="value tabular">${st.ready}</span><span class="delta">limited by ${esc(st.limiting.map(l=>l.name).join(", "))}</span></div>`; }).join("")}</div></div>
 
       <div class="section-title"><h2>Supplies needing reorder</h2></div>
       <div class="card">${low.length ? `<ul>${low.map(s => `<li>${esc(s.name)} — ${s.qtyOnHand} ${esc(s.unit)} on hand (reorder at ${s.reorderThreshold})</li>`).join("")}</ul>` : `<p class="muted small">Nothing currently below its reorder point.</p>`}</div>
