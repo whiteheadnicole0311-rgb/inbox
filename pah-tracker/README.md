@@ -29,18 +29,29 @@ tracking.
   (patient, prescriber, dose, mix, pump rate, mix/use-by date & time) sized
   for label stock; and a generic dose/medication change log for other
   medications.
-- **Supplies** — a **complete-packet calculator** showing how many full
-  dressing-change and cassette-change packets you can assemble right now
-  from your loose supply counts (using each packet's real per-item
-  quantities), plus the 18 loose items pre-loaded with editable on-hand
-  quantities and reorder thresholds, grouped by category, with a reorder
-  banner and an "add new supply" form.
-- **Labs & Tests** — logs for Blood Work, Echo Results (with RVSP/TAPSE),
-  Right Heart Cath (mPAP, PCWP, PVR, cardiac index, RAP), Functional Tests,
-  and Imaging Studies.
+- **Supplies** — a separately-tracked **completed-packet count** (pre-assembled
+  packets ready to grab, incremented/decremented on their own) alongside a
+  secondary "could assemble N more from loose supplies" calculation using
+  each packet's real per-item quantities, plus the 18 loose items with
+  editable on-hand quantities and reorder thresholds, grouped by category.
+- **Labs & Tests** — spreadsheet-style tables for Blood Work (NT-proBNP,
+  creatinine, eGFR, electrolytes, hemoglobin, iron studies, liver enzymes,
+  INR, uric acid, TSH), Echo Results (RVSP/PASP, TAPSE, RV/RA size &
+  function, TR severity, effusion, LVEF, septal flattening, RAP), Right
+  Heart Cath (RA/PA pressures, PCWP, cardiac output/index, PVR, SvO2,
+  vasoreactivity), Functional Tests (6MWT, SpO2, Borg score, WHO/NYHA
+  class, PFTs, risk score), and Imaging & Other Studies.
 - **Events** — a log for hospitalizations, ER visits, falls, infections,
   pump malfunctions, or anything else out of the ordinary, with start/end
   dates, location, description, and outcome.
+- **Visit Prep** — a printable, night-before-the-appointment page: an
+  auto-summary computed from your check-in log over a date range (weight
+  trend and swing, vitals, symptom-day counts, meds-missed days, mood,
+  sleep, and more) plus free-text sections ("in my own words," your top 3
+  questions, and space to fill in what was decided after the visit).
+- **Action Plan** — a printable green/yellow/red zone action plan to fill
+  in together with your care team, with blanks for your personal
+  thresholds and emergency contact numbers.
 - **Report** — a date-ranged summary built to hand to your care team: trend
   stats, current meds, changes in range, the full check-in log, complete
   packets on hand, and supplies needing reorder. Print/save as PDF, or

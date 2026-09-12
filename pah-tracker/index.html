@@ -184,7 +184,7 @@
   th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--mist); vertical-align: top; }
   th { color: var(--slate); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
   .table-scroll { overflow-x: auto; }
-  tr.reorder td { background: var(--coral-tint); }
+  tr.reorder td, tr.flagged td { background: var(--coral-tint); }
 
   .entry-row { display: flex; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--mist); }
   .entry-row:last-child { border-bottom: none; }
@@ -218,26 +218,20 @@
   .range-row input[type=range] { flex: 1; }
   .range-row .rv { width: 22px; text-align: right; font-weight: 700; }
 
+  .ap-list { list-style: none; margin: 0; padding: 0; }
+  .ap-list li { padding: 6px 0; border-bottom: 1px solid var(--mist); }
+  .ap-list li:last-child { border-bottom: none; }
+  .blank {
+    display: inline-block; width: 52px; border: none; border-bottom: 1px solid var(--slate);
+    background: transparent; padding: 1px 4px; text-align: center; font: inherit; color: inherit;
+  }
+  .blank.wide { width: 140px; }
+
   @media print {
-    body:not(.printing-label) header.top, body:not(.printing-label) nav.tabs, body:not(.printing-label) .no-print { display: none !important; }
+    header.top, nav.tabs, .no-print { display: none !important; }
     body { background: #fff; color: #000; }
     .wrap { max-width: 100%; padding: 0; }
-    body:not(.printing-label) section.tab:not(#tab-report) { display: none !important; }
     .card { box-shadow: none; border: 1px solid #ccc; }
-  }
-
-  #labelPrintArea { position: absolute; left: -9999px; top: -9999px; width: 4in; }
-  .label-sheet {
-    width: 4in; height: 2in; box-sizing: border-box; padding: 0.12in;
-    font-family: 'Inter', system-ui, sans-serif; color: #000; background: #fff;
-    font-size: 6.6pt; line-height: 1.28;
-  }
-  .label-sheet .l-title { font-weight: 700; font-size: 7.6pt; margin-bottom: 2px; }
-  .label-sheet .l-row { display: flex; justify-content: space-between; gap: 6px; }
-  .label-sheet .l-call { font-weight: 700; margin-top: 3px; }
-  @media print {
-    body.printing-label .wrap, body.printing-label dialog { display: none !important; }
-    body.printing-label #labelPrintArea { position: static; left: auto; top: auto; }
   }
 </style>
 
@@ -260,6 +254,8 @@
       <button data-tab="supplies">Supplies</button>
       <button data-tab="labs">Labs &amp; Tests</button>
       <button data-tab="events">Events</button>
+      <button data-tab="visitprep">Visit Prep</button>
+      <button data-tab="actionplan">Action Plan</button>
       <button data-tab="report">Report</button>
     </nav>
   </header>
@@ -340,13 +336,23 @@
             <div class="range-row"><input type="range" id="ci-fatigue" min="0" max="10" value="0"><span class="rv tabular" id="ci-fatigue-v">0</span></div>
           </div>
         </div>
+        <div class="grid cols-2">
+          <div class="field">
+            <label for="ci-chestpain">Chest pain (0 none – 10 severe)</label>
+            <div class="range-row"><input type="range" id="ci-chestpain" min="0" max="10" value="0"><span class="rv tabular" id="ci-chestpain-v">0</span></div>
+          </div>
+          <div class="field">
+            <label for="ci-pillows">Pillows needed to sleep</label>
+            <input type="number" id="ci-pillows" min="0" step="1" placeholder="0 = sleeping flat">
+          </div>
+        </div>
         <div class="grid cols-3">
-          <div class="checkrow"><input type="checkbox" id="ci-chestpain"><label for="ci-chestpain">Chest pain</label></div>
           <div class="checkrow"><input type="checkbox" id="ci-palpitations"><label for="ci-palpitations">Palpitations</label></div>
           <div class="checkrow"><input type="checkbox" id="ci-dizziness"><label for="ci-dizziness">Dizziness / lightheadedness</label></div>
           <div class="checkrow"><input type="checkbox" id="ci-syncope"><label for="ci-syncope">Fainting / near-fainting (syncope)</label></div>
-          <div class="checkrow"><input type="checkbox" id="ci-orthopnea"><label for="ci-orthopnea">Needs extra pillows to breathe (orthopnea)</label></div>
           <div class="checkrow"><input type="checkbox" id="ci-cough"><label for="ci-cough">New or worse cough</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-wokeSob"><label for="ci-wokeSob">Woke up short of breath</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-hemoptysis"><label for="ci-hemoptysis">Coughed up blood</label></div>
         </div>
 
         <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Fluid overload signs</h2></div>
@@ -359,14 +365,30 @@
             <label for="ci-edemaLoc">Location (if any)</label>
             <input type="text" id="ci-edemaLoc" placeholder="e.g. ankles, legs, abdomen">
           </div>
+          <div class="field">
+            <label for="ci-bloating">Belly bloating</label>
+            <select id="ci-bloating"><option value="none">None</option><option value="mild">Mild</option><option value="moderate">Moderate</option><option value="severe">Severe</option></select>
+          </div>
         </div>
-        <div class="checkrow"><input type="checkbox" id="ci-bloating"><label for="ci-bloating">Increased abdominal girth / bloating</label></div>
+
+        <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Diuretic, salt &amp; fluids</h2></div>
+        <div class="grid cols-3">
+          <div class="checkrow"><input type="checkbox" id="ci-prnDiuretic"><label for="ci-prnDiuretic">Took an extra (PRN) diuretic dose</label></div>
+          <div class="checkrow"><input type="checkbox" id="ci-overSalt"><label for="ci-overSalt">Went over my salt limit</label></div>
+          <div class="field"><label for="ci-fluidOz">Fluid intake (oz)</label><input type="number" id="ci-fluidOz" min="0" step="1"></div>
+        </div>
 
         <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Medications taken today</h2></div>
         <div id="ci-medsTaken" class="grid cols-2"></div>
-        <div class="field" style="margin-top:10px;">
-          <label for="ci-medsNotes">Missed or changed doses</label>
-          <input type="text" id="ci-medsNotes" placeholder="e.g. skipped evening Adcirca dose">
+        <div class="grid cols-2" style="margin-top:10px;">
+          <div class="field">
+            <label for="ci-medsNotes">Missed or changed doses</label>
+            <input type="text" id="ci-medsNotes" placeholder="e.g. skipped evening Adcirca dose">
+          </div>
+          <div class="field">
+            <div class="checkrow"><input type="checkbox" id="ci-newSideEffect"><label for="ci-newSideEffect">New or worsening side effect</label></div>
+            <input type="text" id="ci-sideEffectNotes" placeholder="Which medication, what happened…">
+          </div>
         </div>
 
         <div class="section-title" style="margin:18px 0 8px;"><h2 style="font-size:14px;">Activity &amp; life</h2></div>
@@ -383,7 +405,12 @@
           </div>
           <div class="field">
             <label for="ci-lifeNotes">Notes on daily life</label>
-            <input type="text" id="ci-lifeNotes" placeholder="energy, mood, work, exercise attempted…">
+            <input type="text" id="ci-lifeNotes" placeholder="energy, work, exercise attempted…">
+          </div>
+          <div class="field"><label for="ci-sleepHours">Sleep (hours)</label><input type="number" id="ci-sleepHours" min="0" step="0.5"></div>
+          <div class="field">
+            <label for="ci-mood">Mood (0 low – 10 best)</label>
+            <div class="range-row"><input type="range" id="ci-mood" min="0" max="10" value="5"><span class="rv tabular" id="ci-mood-v">5</span></div>
           </div>
         </div>
 
@@ -408,8 +435,9 @@
           <label for="ci-notes">Notes for your care team</label>
           <textarea id="ci-notes" placeholder="Anything else worth flagging…"></textarea>
         </div>
+        <div class="checkrow"><input type="checkbox" id="ci-flagged"><label for="ci-flagged">Flag this day for review at my next visit</label></div>
 
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; margin-top:8px;">
           <button type="submit" class="btn primary">Save check-in</button>
           <button type="button" class="btn ghost" id="ci-cancel" hidden>Cancel edit</button>
         </div>
@@ -486,7 +514,7 @@
   <!-- SUPPLIES -->
   <section class="tab" id="tab-supplies" hidden>
     <div class="section-title"><h2>Complete packets on hand</h2></div>
-    <p class="muted small" style="margin-top:-6px;">Built from your loose supply counts below — how many full changes you could do right now.</p>
+    <p class="muted small" style="margin-top:-6px;">Pre-assembled packets ready to grab — tracked separately from the loose supplies below. Adjust the count as you assemble or use one.</p>
     <div class="grid cols-2" id="packetSummary"></div>
 
     <div class="section-title" style="margin-top:28px;"><h2>Loose supplies</h2></div>
@@ -519,7 +547,7 @@
 
   <!-- LABS & TESTS -->
   <section class="tab" id="tab-labs" hidden>
-    <p class="muted small">A place to keep the numbers your care team asks about between visits.</p>
+    <p class="muted small">Copy your numbers in after each visit — ask for a printout or pull them from your patient portal. Seeing these side by side over time is exactly what a PH specialist is doing in their head; having it already assembled saves the appointment for the conversation that matters.</p>
     <div id="labsGroups"></div>
   </section>
 
@@ -560,6 +588,35 @@
     <div class="card" id="eventHistory"></div>
   </section>
 
+  <!-- VISIT PREP -->
+  <section class="tab" id="tab-visitprep" hidden>
+    <h2 class="display" style="margin: 0 0 4px; font-size: 20px;">Visit Prep — open this the night before. Print it. Hand it over.</h2>
+    <p class="small muted" style="margin: 0 0 16px;">The summary box fills itself in from your check-in log. Everything below it is yours to write.</p>
+
+    <div class="card no-print">
+      <div class="grid cols-3">
+        <div class="field"><label for="vp-from">Since (from)</label><input type="date" id="vp-from"></div>
+        <div class="field"><label for="vp-to">Through (to)</label><input type="date" id="vp-to"></div>
+        <div class="field" style="align-self:end;"><button class="btn ghost" id="vp-apply" type="button">Update range</button></div>
+      </div>
+      <button class="btn primary" id="vp-print" type="button">Print this page</button>
+    </div>
+
+    <div class="section-title" style="margin-top:20px;"><h2>Auto-summary from my check-in log</h2></div>
+    <div id="vpSummary"></div>
+
+    <div id="vpFreeText" style="margin-top:8px;"></div>
+  </section>
+
+  <!-- ACTION PLAN -->
+  <section class="tab" id="tab-actionplan" hidden>
+    <h2 class="display" style="margin: 0 0 4px; font-size: 20px;">My Action Plan — bring this to your next visit and fill it in TOGETHER</h2>
+    <div class="card no-print" style="margin-top:12px;">
+      <button class="btn primary" id="ap-print" type="button">Print this page</button>
+    </div>
+    <div id="actionPlanBody" style="margin-top:16px;"></div>
+  </section>
+
   <!-- REPORT -->
   <section class="tab" id="tab-report" hidden>
     <div class="card no-print">
@@ -579,8 +636,6 @@
     <div id="reportBody" style="margin-top:16px;"></div>
   </section>
 </div>
-
-<div id="labelPrintArea" aria-hidden="true"></div>
 
 <dialog id="formModal">
   <div class="modal-head"><h3 id="modalTitle">Medication</h3><button class="icon-btn" id="modalClose" aria-label="Close">✕</button></div>
@@ -629,13 +684,16 @@
   $("#ch-date").value = todayStr();
   $("#tt-date").value = todayStr();
   $("#ev-start").value = todayStr();
+  $("#vp-from").value = (() => { const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().slice(0,10); })();
+  $("#vp-to").value = todayStr();
 
   // ---------- tabs ----------
-  const tabs = ["dashboard","checkin","meds","supplies","labs","events","report"];
+  const tabs = ["dashboard","checkin","meds","supplies","labs","events","visitprep","actionplan","report"];
   function showTab(name) {
     tabs.forEach(t => { $("#tab-" + t).hidden = t !== name; });
     $$("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
     if (name === "report") renderReport();
+    if (name === "visitprep") renderVisitPrepSummary();
   }
   $("#tabs").addEventListener("click", e => {
     const b = e.target.closest("button[data-tab]");
@@ -656,6 +714,9 @@
   let labs = [];
   let events = [];
   let profile = {};
+  let packetInventory = {};
+  let visitPrepData = {};
+  let actionPlanData = {};
 
   const CATEGORY_ORDER = ["Medication", "Infusion & pump", "Site care & dressing", "PPE", "Other"];
 
@@ -757,8 +818,8 @@
 
     const needReorder = supplies.filter(s => statusFor(s) !== "ok").length;
     const packetRows = PACKETS.map(p => {
-      const st = packetStatus(p);
-      return `<div class="entry-row"><span>${esc(p.name)}s ready</span><b class="tabular" style="color:${st.ready <= 0 ? 'var(--coral)' : st.ready <= 1 ? 'var(--amber)' : 'var(--teal-deep)'}">${st.ready}</b></div>`;
+      const onHand = completedCount(p.id);
+      return `<div class="entry-row"><span>${esc(p.name)}s on hand</span><b class="tabular" style="color:${onHand <= 0 ? 'var(--coral)' : onHand <= 1 ? 'var(--amber)' : 'var(--teal-deep)'}">${onHand}</b></div>`;
     }).join("");
     $("#dashSupplyStatus").innerHTML = `
       ${packetRows}
@@ -811,13 +872,16 @@
     if (c.dyspnea >= 7) badges.push(`<span class="badge crit">SOB ${c.dyspnea}/10</span>`);
     else if (c.dyspnea >= 4) badges.push(`<span class="badge warn">SOB ${c.dyspnea}/10</span>`);
     if (c.edema && c.edema !== "none") badges.push(`<span class="badge ${c.edema==='severe'?'crit':'warn'}">edema: ${esc(c.edema)}</span>`);
-    if (c.bloating) badges.push(`<span class="badge warn">bloating</span>`);
-    if (c.chestPain) badges.push(`<span class="badge crit">chest pain</span>`);
+    if (c.bloating && c.bloating !== "none") badges.push(`<span class="badge ${c.bloating==='severe'?'crit':'warn'}">bloating: ${esc(c.bloating)}</span>`);
+    if (c.chestPain >= 1) badges.push(`<span class="badge crit">chest pain ${c.chestPain}/10</span>`);
     if (c.syncope) badges.push(`<span class="badge crit">syncope</span>`);
-    if (c.orthopnea) badges.push(`<span class="badge warn">orthopnea</span>`);
+    if (c.hemoptysis) badges.push(`<span class="badge crit">coughed up blood</span>`);
+    if (c.pillows >= 3) badges.push(`<span class="badge warn">${c.pillows} pillows</span>`);
+    if (c.wokeSob) badges.push(`<span class="badge warn">woke SOB</span>`);
     if ((c.siteIssues||[]).length) badges.push(`<span class="badge warn">site: ${esc(c.siteIssues.join(", "))}</span>`);
     if (c.pumpAlarm) badges.push(`<span class="badge crit">pump alarm</span>`);
     if (c.activity === "resting" || c.activity === "bedbound") badges.push(`<span class="badge warn">activity: ${esc(c.activity)}</span>`);
+    if (c.flagged) badges.push(`<span class="badge crit">flagged for review</span>`);
     return `<div class="entry-row">
       <div>
         <b>${esc(fmtDate(c.date))}</b>
@@ -849,23 +913,33 @@
       weight: num("#ci-weight"),
       dyspnea: Number($("#ci-dyspnea").value),
       fatigue: Number($("#ci-fatigue").value),
-      orthopnea: $("#ci-orthopnea").checked,
+      pillows: num("#ci-pillows"),
       cough: $("#ci-cough").checked,
+      wokeSob: $("#ci-wokeSob").checked,
+      hemoptysis: $("#ci-hemoptysis").checked,
       edema: $("#ci-edema").value,
       edemaLocation: $("#ci-edemaLoc").value.trim(),
-      bloating: $("#ci-bloating").checked,
-      chestPain: $("#ci-chestpain").checked,
+      bloating: $("#ci-bloating").value,
+      chestPain: Number($("#ci-chestpain").value),
       dizziness: $("#ci-dizziness").checked,
       syncope: $("#ci-syncope").checked,
       palpitations: $("#ci-palpitations").checked,
+      prnDiuretic: $("#ci-prnDiuretic").checked,
+      overSalt: $("#ci-overSalt").checked,
+      fluidOz: num("#ci-fluidOz"),
       medsTaken,
       medsNotes: $("#ci-medsNotes").value.trim(),
+      newSideEffect: $("#ci-newSideEffect").checked,
+      sideEffectNotes: $("#ci-sideEffectNotes").value.trim(),
       activity: $("#ci-activity").value,
       lifeNotes: $("#ci-lifeNotes").value.trim(),
+      sleepHours: num("#ci-sleepHours"),
+      mood: Number($("#ci-mood").value),
       siteIssues: $$(".ci-site:checked").map(c => c.value),
       pumpAlarm: $("#ci-pumpalarm").checked,
       pumpNotes: $("#ci-pumpNotes").value.trim(),
       notes: $("#ci-notes").value.trim(),
+      flagged: $("#ci-flagged").checked,
     };
   }
 
@@ -875,6 +949,8 @@
     $("#ci-date").value = todayStr();
     $("#ci-dyspnea-v").textContent = "0";
     $("#ci-fatigue-v").textContent = "0";
+    $("#ci-chestpain-v").textContent = "0";
+    $("#ci-mood-v").textContent = "5";
     $("#ci-cancel").hidden = true;
     renderCheckinMedsTaken(null);
     updateWeightDelta();
@@ -882,6 +958,8 @@
 
   $("#ci-dyspnea").addEventListener("input", e => $("#ci-dyspnea-v").textContent = e.target.value);
   $("#ci-fatigue").addEventListener("input", e => $("#ci-fatigue-v").textContent = e.target.value);
+  $("#ci-chestpain").addEventListener("input", e => $("#ci-chestpain-v").textContent = e.target.value);
+  $("#ci-mood").addEventListener("input", e => $("#ci-mood-v").textContent = e.target.value);
   $("#ci-cancel").addEventListener("click", resetCheckinForm);
 
   $("#checkinForm").addEventListener("submit", async (e) => {
@@ -914,23 +992,33 @@
       $("#ci-weight").value = c.weight ?? "";
       $("#ci-dyspnea").value = c.dyspnea || 0; $("#ci-dyspnea-v").textContent = c.dyspnea || 0;
       $("#ci-fatigue").value = c.fatigue || 0; $("#ci-fatigue-v").textContent = c.fatigue || 0;
-      $("#ci-orthopnea").checked = !!c.orthopnea;
+      $("#ci-chestpain").value = c.chestPain || 0; $("#ci-chestpain-v").textContent = c.chestPain || 0;
+      $("#ci-pillows").value = c.pillows ?? "";
       $("#ci-cough").checked = !!c.cough;
+      $("#ci-wokeSob").checked = !!c.wokeSob;
+      $("#ci-hemoptysis").checked = !!c.hemoptysis;
       $("#ci-edema").value = c.edema || "none";
       $("#ci-edemaLoc").value = c.edemaLocation || "";
-      $("#ci-bloating").checked = !!c.bloating;
-      $("#ci-chestpain").checked = !!c.chestPain;
+      $("#ci-bloating").value = c.bloating || "none";
       $("#ci-dizziness").checked = !!c.dizziness;
       $("#ci-syncope").checked = !!c.syncope;
       $("#ci-palpitations").checked = !!c.palpitations;
+      $("#ci-prnDiuretic").checked = !!c.prnDiuretic;
+      $("#ci-overSalt").checked = !!c.overSalt;
+      $("#ci-fluidOz").value = c.fluidOz ?? "";
       renderCheckinMedsTaken(c.medsTaken || null);
       $("#ci-medsNotes").value = c.medsNotes || "";
+      $("#ci-newSideEffect").checked = !!c.newSideEffect;
+      $("#ci-sideEffectNotes").value = c.sideEffectNotes || "";
       $("#ci-activity").value = c.activity || "";
       $("#ci-lifeNotes").value = c.lifeNotes || "";
+      $("#ci-sleepHours").value = c.sleepHours ?? "";
+      $("#ci-mood").value = c.mood ?? 5; $("#ci-mood-v").textContent = c.mood ?? 5;
       $$(".ci-site").forEach(cb => cb.checked = (c.siteIssues||[]).includes(cb.value));
       $("#ci-pumpalarm").checked = !!c.pumpAlarm;
       $("#ci-pumpNotes").value = c.pumpNotes || "";
       $("#ci-notes").value = c.notes || "";
+      $("#ci-flagged").checked = !!c.flagged;
       $("#ci-cancel").hidden = false;
       showTab("checkin");
       updateWeightDelta();
@@ -1076,12 +1164,14 @@
       const data = {
         category: modal.dataset.category,
         date: $("#lb-date").value || todayStr(),
-        testName: $("#lb-testName").value.trim(),
-        result: $("#lb-result").value.trim(),
-        notes: $("#lb-notes").value.trim(),
         flagged: $("#lb-flagged").checked,
       };
-      $$(".lab-metric").forEach(inp => { if (inp.value !== "") data[inp.dataset.key] = Number(inp.value); });
+      const notesEl = $("#lb-notes");
+      if (notesEl) data.notes = notesEl.value.trim();
+      $$(".lab-metric").forEach(inp => {
+        const raw = inp.value;
+        data[inp.dataset.key] = raw === "" ? null : (inp.dataset.type === "number" ? Number(raw) : raw.trim());
+      });
       try {
         if (modal.dataset.id) await db.collection("labs").doc(modal.dataset.id).set(data);
         else await db.collection("labs").add(data);
@@ -1186,13 +1276,21 @@
     return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
   }
 
+  function labelSource() {
+    // Prefer whatever is currently typed in the titration form (so printing
+    // never requires saving first); fall back to the latest saved titration.
+    const live = computeTitration(readTitrationInputs());
+    if (live) return Object.assign({ date: $("#tt-date").value || todayStr() }, readTitrationInputs(), live);
+    return currentTitration();
+  }
+
   function renderLabelCard() {
     const card = $("#labelCard");
-    const cur = currentTitration();
+    const src = labelSource();
     const existingDate = $("#lbl-dateMixed") ? $("#lbl-dateMixed").value : todayStr();
     const existingTime = $("#lbl-timeMixed") ? $("#lbl-timeMixed").value : nowTimeStr();
-    if (!cur) {
-      card.innerHTML = `<p class="muted small">Save a titration above first — the label pulls its dose, weight, and mix from your latest entry.</p>`;
+    if (!src) {
+      card.innerHTML = `<p class="muted small">Fill in the mix &amp; dose above (or save a titration) — the label pulls its dose, weight, and mix from there.</p>`;
       return;
     }
     card.innerHTML = `
@@ -1201,15 +1299,17 @@
         <div class="field"><label for="lbl-timeMixed">Time mixed</label><input type="time" id="lbl-timeMixed" value="${esc(existingTime)}"></div>
         <div class="field" style="align-self:end;"><button type="button" class="btn primary" id="btnPrintLabel">Print label (2×4in)</button></div>
       </div>
-      <p class="small muted">Using latest titration from ${esc(fmtDate(cur.date))}: ${esc(cur.doseNgKgMin)} ng/kg/min at ${esc(cur.concNgMl)} ng/mL, ${esc(cur.weightKg)} kg dosing weight.</p>
+      <p class="small muted">Using ${esc(src.doseNgKgMin)} ng/kg/min at ${esc(src.concNgMl)} ng/mL, ${esc(src.weightKg)} kg dosing weight.</p>
     `;
   }
   $("#labelCard").addEventListener("click", (e) => {
     if (e.target.closest("#btnPrintLabel")) printCassetteLabel();
   });
+  ["#tt-weight", "#tt-dose", "#tt-conc", "#tt-volume"].forEach(sel => $(sel).addEventListener("input", renderLabelCard));
+  $("#tt-vial").addEventListener("change", renderLabelCard);
 
   function buildLabelHtml() {
-    const cur = currentTitration();
+    const cur = labelSource();
     if (!cur) return "";
     const dateMixed = $("#lbl-dateMixed") ? $("#lbl-dateMixed").value : todayStr();
     const timeMixed = $("#lbl-timeMixed") ? $("#lbl-timeMixed").value : nowTimeStr();
@@ -1237,21 +1337,45 @@
     `;
   }
 
+  const LABEL_STYLE = `
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .label-sheet {
+      width: 4in; height: 2in; padding: 0.12in;
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff;
+      font-size: 6.6pt; line-height: 1.3;
+    }
+    .label-sheet .l-title { font-weight: 700; font-size: 7.6pt; margin-bottom: 2px; }
+    .label-sheet .l-row { display: flex; justify-content: space-between; gap: 6px; }
+    .label-sheet .l-call { font-weight: 700; margin-top: 3px; }
+    @page { size: 4in 2in; margin: 0; }
+  `;
+
   function printCassetteLabel() {
     const html = buildLabelHtml();
-    if (!html) return;
-    $("#labelPrintArea").innerHTML = html;
-    document.body.classList.add("printing-label");
-    const styleEl = document.createElement("style");
-    styleEl.textContent = "@page { size: 4in 2in; margin: 0; }";
-    document.head.appendChild(styleEl);
-    const cleanup = () => {
-      document.body.classList.remove("printing-label");
-      styleEl.remove();
-      window.removeEventListener("afterprint", cleanup);
-    };
-    window.addEventListener("afterprint", cleanup);
-    window.print();
+    if (!html) { alert("Enter a dosing weight, dose, concentration, vial strength, and volume above first."); return; }
+    try {
+      const iframe = document.createElement("iframe");
+      iframe.setAttribute("aria-hidden", "true");
+      Object.assign(iframe.style, { position: "fixed", right: "0", bottom: "0", width: "0", height: "0", border: "0" });
+      document.body.appendChild(iframe);
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Cassette label</title><style>${LABEL_STYLE}</style></head><body>${html}</body></html>`);
+      doc.close();
+      const cleanup = () => setTimeout(() => iframe.remove(), 1000);
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (err) {
+          alert("Couldn't open the print dialog: " + (err.message || err));
+        }
+        cleanup();
+      };
+    } catch (err) {
+      alert("Couldn't prepare the label for printing: " + (err.message || err));
+    }
   }
 
   // ---------- supplies ----------
@@ -1281,16 +1405,26 @@
     </div>`;
   }
 
+  function completedCount(packetId) {
+    return (packetInventory[packetId] && packetInventory[packetId].completedCount) || 0;
+  }
+
   function renderPacketSummary() {
     $("#packetSummary").innerHTML = PACKETS.map(p => {
+      const onHand = completedCount(p.id);
       const st = packetStatus(p);
-      const badgeClass = st.ready <= 0 ? "crit" : st.ready <= 1 ? "warn" : "ok";
-      return `<div class="card">
+      const badgeClass = onHand <= 0 ? "crit" : onHand <= 1 ? "warn" : "ok";
+      return `<div class="card" data-packet="${p.id}">
         <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
-          <h3 style="margin:0;font-size:15px;">${esc(p.name)}</h3>
-          <span class="badge ${badgeClass} tabular">${st.ready} complete</span>
+          <h3 style="margin:0;font-size:15px;">${esc(p.name)}s</h3>
+          <span class="badge ${badgeClass}">on hand</span>
         </div>
-        <div class="small muted" style="margin-top:6px;">Limited by ${esc(st.limiting.map(l => l.name).join(", "))} (${st.limiting[0] ? st.limiting[0].qty : 0} on hand)</div>
+        <div class="stepper" style="margin-top:8px;">
+          <button type="button" data-packet-qty="-1">−</button>
+          <input type="number" class="tabular packet-qty-input" value="${onHand}" min="0" style="width:56px; text-align:center; font-size:22px; font-weight:700;">
+          <button type="button" data-packet-qty="1">+</button>
+        </div>
+        <div class="small muted" style="margin-top:8px;">Could assemble ${st.ready} more from loose supplies — limited by ${esc(st.limiting.map(l => l.name).join(", "))} (${st.limiting[0] ? st.limiting[0].qty : 0} on hand)</div>
         <details style="margin-top:8px;">
           <summary class="small" style="cursor:pointer;color:var(--slate);">Components (${p.items.length})</summary>
           <ul class="small" style="margin:8px 0 0; padding-left:18px;">
@@ -1300,6 +1434,22 @@
       </div>`;
     }).join("");
   }
+  $("#packetSummary").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-packet]");
+    if (!card || !db) return;
+    const step = e.target.closest("[data-packet-qty]");
+    if (step) {
+      const dir = Number(step.dataset.packetQty);
+      const next = Math.max(0, completedCount(card.dataset.packet) + dir);
+      db.collection("packetInventory").doc(card.dataset.packet).set({ completedCount: next }).catch(err => alert(err.message));
+    }
+  });
+  $("#packetSummary").addEventListener("change", (e) => {
+    const card = e.target.closest("[data-packet]");
+    if (!card || !db || !e.target.classList.contains("packet-qty-input")) return;
+    const next = Math.max(0, Number(e.target.value) || 0);
+    db.collection("packetInventory").doc(card.dataset.packet).set({ completedCount: next }).catch(err => alert(err.message));
+  });
 
   function renderSupplies() {
     renderPacketSummary();
@@ -1371,53 +1521,128 @@
 
   // ---------- labs & tests ----------
   const LAB_CATEGORIES = [
-    { id: "bloodwork", name: "Blood Work", fields: [] },
-    { id: "echo", name: "Echo Results", fields: [ { key: "rvsp", label: "RVSP (mmHg)" }, { key: "tapse", label: "TAPSE (cm)" } ] },
-    { id: "rhc", name: "Right Heart Cath", fields: [ { key: "mpap", label: "mPAP (mmHg)" }, { key: "pcwp", label: "PCWP (mmHg)" }, { key: "pvr", label: "PVR (WU)" }, { key: "ci", label: "Cardiac Index (L/min/m²)" }, { key: "rap", label: "RAP (mmHg)" } ] },
-    { id: "functional", name: "Functional Tests", fields: [] },
-    { id: "imaging", name: "Imaging Studies", fields: [] },
+    {
+      id: "bloodwork", name: "Blood Work", notesLabel: "Where drawn / notes",
+      fields: [
+        { key: "ntProBnp", label: "NT-proBNP or BNP", type: "text" },
+        { key: "creatinine", label: "Creatinine", type: "number" },
+        { key: "egfr", label: "eGFR", type: "number" },
+        { key: "sodium", label: "Sodium", type: "number" },
+        { key: "potassium", label: "Potassium", type: "number" },
+        { key: "hemoglobin", label: "Hemoglobin", type: "number" },
+        { key: "ferritin", label: "Ferritin", type: "number" },
+        { key: "tsat", label: "Iron sat (TSAT %)", type: "number" },
+        { key: "astAlt", label: "AST / ALT", type: "text" },
+        { key: "bilirubin", label: "Bilirubin", type: "number" },
+        { key: "albumin", label: "Albumin", type: "number" },
+        { key: "inr", label: "INR (if applicable)", type: "number" },
+        { key: "uricAcid", label: "Uric acid", type: "number" },
+        { key: "tsh", label: "TSH", type: "number" },
+      ],
+    },
+    {
+      id: "echo", name: "Echo Results", notesLabel: "Notes / what my team said",
+      fields: [
+        { key: "rvsp", label: "Estimated RVSP / PASP (mmHg)", type: "number" },
+        { key: "tapse", label: "TAPSE (mm)", type: "number" },
+        { key: "rvSize", label: "RV size", type: "select", options: ["Normal","Mildly dilated","Moderately dilated","Severely dilated"] },
+        { key: "rvFunction", label: "RV function", type: "select", options: ["Normal","Mildly reduced","Moderately reduced","Severely reduced"] },
+        { key: "raSize", label: "RA size", type: "select", options: ["Normal","Mildly dilated","Moderately dilated","Severely dilated"] },
+        { key: "trSeverity", label: "TR severity", type: "select", options: ["None","Trace","Mild","Moderate","Severe"] },
+        { key: "pericardialEffusion", label: "Pericardial effusion?", type: "select", options: ["No","Trace","Small","Moderate","Large"] },
+        { key: "lvef", label: "LVEF (%)", type: "number" },
+        { key: "septalFlattening", label: "Septal flattening / D-shape?", type: "select", options: ["No","Yes"] },
+        { key: "estRap", label: "Estimated RAP", type: "text" },
+        { key: "whoRead", label: "Who read it", type: "text" },
+      ],
+    },
+    {
+      id: "rhc", name: "Right Heart Cath", notesLabel: "Notes / what changed after",
+      intro: "These are the numbers that define PAH and drive treatment decisions. Ask for them by name — you're entitled to your results.",
+      fields: [
+        { key: "raPressure", label: "Mean RA pressure", type: "number" },
+        { key: "mpap", label: "Mean PA pressure (mPAP)", type: "number" },
+        { key: "paSysDia", label: "PA systolic / diastolic", type: "text" },
+        { key: "pcwp", label: "PCWP / wedge", type: "number" },
+        { key: "cardiacOutput", label: "Cardiac output", type: "number" },
+        { key: "cardiacIndex", label: "Cardiac index", type: "number" },
+        { key: "pvr", label: "PVR (Wood units)", type: "number" },
+        { key: "svo2", label: "SvO₂ (%)", type: "number" },
+        { key: "vasoreactivity", label: "Vasoreactivity tested? Result", type: "text" },
+        { key: "reason", label: "Reason for the cath", type: "text" },
+      ],
+    },
+    {
+      id: "functional", name: "Functional Tests", notesLabel: "Notes",
+      fields: [
+        { key: "sixMwt", label: "6-minute walk distance (m or ft)", type: "number" },
+        { key: "spo2Start", label: "SpO₂ start", type: "number" },
+        { key: "spo2Lowest", label: "SpO₂ lowest during walk", type: "number" },
+        { key: "borg", label: "Borg breathlessness after (0–10)", type: "number" },
+        { key: "stops", label: "Stops needed", type: "number" },
+        { key: "whoClass", label: "WHO / NYHA class", type: "select", options: ["I","II","III","IV"] },
+        { key: "vo2max", label: "VO₂ max / CPET", type: "text" },
+        { key: "fvc", label: "FVC", type: "text" },
+        { key: "fev1", label: "FEV₁", type: "text" },
+        { key: "dlco", label: "DLCO", type: "text" },
+        { key: "riskScore", label: "Risk score (REVEAL / ESC)", type: "text" },
+        { key: "riskCategory", label: "Risk category", type: "select", options: ["Low","Intermediate","High"] },
+      ],
+    },
+    {
+      id: "imaging", name: "Imaging & Other Studies", notesLabel: null,
+      fields: [
+        { key: "study", label: "Study (CT, V/Q scan, MRI, sleep study, chest X-ray, other)", type: "text" },
+        { key: "reason", label: "Reason", type: "text" },
+        { key: "resultPlain", label: "Result in plain language", type: "textarea" },
+        { key: "whatChanged", label: "What changed because of it", type: "textarea" },
+        { key: "whereStored", label: "Where the images are stored", type: "text" },
+      ],
+    },
   ];
 
-  function labEntryHtml(l, cat) {
-    const metrics = (cat.fields||[]).filter(f => l[f.key] != null && l[f.key] !== "").map(f => `<span class="badge neutral tabular">${esc(f.label)}: ${esc(l[f.key])}</span>`).join(" ");
-    return `<div class="entry-row">
-      <div>
-        <b>${esc(fmtDate(l.date))}</b>${l.testName ? " · " + esc(l.testName) : ""} ${l.flagged ? '<span class="badge crit">flagged</span>' : ""}
-        <div class="entry-meta">${metrics}</div>
-        ${l.result ? `<div class="small" style="margin-top:6px;max-width:60ch;">${esc(l.result)}</div>` : ""}
-        ${l.notes ? `<div class="small muted" style="margin-top:4px;max-width:60ch;">${esc(l.notes)}</div>` : ""}
-      </div>
-      <div class="entry-actions">
-        <button class="btn ghost sm" data-edit-lab="${l.id}">Edit</button>
-        <button class="btn danger sm" data-del-lab="${l.id}">Delete</button>
-      </div>
-    </div>`;
+  function labTableHtml(cat) {
+    const entries = labs.filter(l => l.category === cat.id).sort((a,b) => a.date < b.date ? 1 : -1);
+    if (!entries.length) return `<div class="empty small">No ${esc(cat.name.toLowerCase())} logged yet.</div>`;
+    return `<div class="table-scroll"><table>
+      <thead><tr><th>Date</th>${cat.fields.map(f => `<th>${esc(f.label)}</th>`).join("")}${cat.notesLabel ? `<th>${esc(cat.notesLabel)}</th>` : ""}<th></th></tr></thead>
+      <tbody>${entries.map(l => `<tr class="${l.flagged ? "flagged" : ""}">
+        <td class="tabular">${esc(fmtDate(l.date))}</td>
+        ${cat.fields.map(f => `<td class="tabular">${esc(l[f.key] ?? "")}</td>`).join("")}
+        ${cat.notesLabel ? `<td>${esc(l.notes||"")}</td>` : ""}
+        <td><div class="entry-actions"><button class="btn ghost sm" data-edit-lab="${l.id}">Edit</button><button class="btn danger sm" data-del-lab="${l.id}">Delete</button></div></td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
   }
 
   function renderLabs() {
-    $("#labsGroups").innerHTML = LAB_CATEGORIES.map(cat => {
-      const entries = labs.filter(l => l.category === cat.id).sort((a,b) => a.date < b.date ? 1 : -1);
-      return `
-        <div class="section-title"><h2 style="font-size:16px;">${esc(cat.name)}</h2><button class="btn primary sm" data-add-lab="${cat.id}">+ Add result</button></div>
-        <div class="card">${entries.length ? entries.map(l => labEntryHtml(l, cat)).join("") : `<div class="empty small">No ${esc(cat.name.toLowerCase())} logged yet.</div>`}</div>
-      `;
-    }).join("");
+    $("#labsGroups").innerHTML = LAB_CATEGORIES.map(cat => `
+      <div class="section-title"><h2 style="font-size:16px;">${esc(cat.name)}</h2><button class="btn primary sm" data-add-lab="${cat.id}">+ Add entry</button></div>
+      ${cat.intro ? `<p class="muted small" style="margin-top:-6px;">${esc(cat.intro)}</p>` : ""}
+      <div class="card">${labTableHtml(cat)}</div>
+    `).join("");
+  }
+
+  function labFieldInputHtml(f, value) {
+    const val = value != null ? value : "";
+    if (f.type === "select") {
+      return `<select class="lab-metric" data-key="${esc(f.key)}" data-type="select"><option value="">—</option>${f.options.map(o => `<option value="${esc(o)}" ${val===o?"selected":""}>${esc(o)}</option>`).join("")}</select>`;
+    }
+    if (f.type === "textarea") {
+      return `<textarea class="lab-metric" data-key="${esc(f.key)}" data-type="text">${esc(val)}</textarea>`;
+    }
+    const inputType = f.type === "number" ? "number" : "text";
+    return `<input type="${inputType}" ${f.type==="number" ? 'step="any"' : ""} class="lab-metric" data-key="${esc(f.key)}" data-type="${f.type}" value="${esc(val)}">`;
   }
 
   function openLabModal(categoryId, lab) {
     const cat = LAB_CATEGORIES.find(c => c.id === (lab ? lab.category : categoryId));
-    $("#modalTitle").textContent = (lab ? "Edit " : "Add ") + cat.name.toLowerCase() + " result";
-    const metricFields = (cat.fields||[]).map(f => `
-      <div class="field"><label>${esc(f.label)}</label><input type="number" step="any" class="lab-metric" data-key="${esc(f.key)}" value="${lab && lab[f.key] != null ? esc(lab[f.key]) : ""}"></div>
-    `).join("");
+    $("#modalTitle").textContent = (lab ? "Edit " : "Add ") + cat.name.toLowerCase() + " entry";
+    const fieldsHtml = cat.fields.map(f => `<div class="field"><label>${esc(f.label)}</label>${labFieldInputHtml(f, lab ? lab[f.key] : null)}</div>`).join("");
     $("#modalBody").innerHTML = `
-      <div class="grid cols-2">
-        <div class="field"><label>Date</label><input type="date" id="lb-date" value="${esc(lab?.date || todayStr())}"></div>
-        <div class="field"><label>Test / study name</label><input type="text" id="lb-testName" placeholder="e.g. BNP, TTE, CT chest" value="${esc(lab?.testName||"")}"></div>
-      </div>
-      ${metricFields ? `<div class="grid cols-2">${metricFields}</div>` : ""}
-      <div class="field"><label>Result summary</label><textarea id="lb-result" placeholder="Key values, findings…">${esc(lab?.result||"")}</textarea></div>
-      <div class="field"><label>Notes</label><textarea id="lb-notes" placeholder="Context, follow-up needed…">${esc(lab?.notes||"")}</textarea></div>
+      <div class="field"><label>Date</label><input type="date" id="lb-date" value="${esc(lab?.date || todayStr())}"></div>
+      <div class="grid cols-2">${fieldsHtml}</div>
+      ${cat.notesLabel ? `<div class="field"><label>${esc(cat.notesLabel)}</label><textarea id="lb-notes">${esc(lab?.notes||"")}</textarea></div>` : ""}
       <div class="checkrow"><input type="checkbox" id="lb-flagged" ${lab?.flagged ? "checked":""}><label for="lb-flagged">Flag as abnormal / notable</label></div>
     `;
     $("#formModal").dataset.mode = "lab";
@@ -1432,7 +1657,7 @@
     const delBtn = e.target.closest("[data-del-lab]");
     if (addBtn) openLabModal(addBtn.dataset.addLab, null);
     else if (editBtn) openLabModal(null, labs.find(l => l.id === editBtn.dataset.editLab));
-    else if (delBtn && db) { if (confirm("Delete this result?")) db.collection("labs").doc(delBtn.dataset.delLab).delete().catch(err=>alert(err.message)); }
+    else if (delBtn && db) { if (confirm("Delete this entry?")) db.collection("labs").doc(delBtn.dataset.delLab).delete().catch(err=>alert(err.message)); }
   });
 
   // ---------- events ----------
@@ -1507,6 +1732,238 @@
     }
   });
 
+  // ---------- visit prep ----------
+  function computeVisitSummary(from, to) {
+    const inR = checkins.filter(c => (!from || c.date >= from) && (!to || c.date <= to)).sort((a,b) => a.date < b.date ? -1 : 1);
+    const n = inR.length;
+    const nums = (field) => inR.filter(c => c[field] != null).map(c => c[field]);
+    const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0) / arr.length) : null;
+    const countIf = (pred) => inR.filter(pred).length;
+    const weights = nums("weight");
+
+    let biggestGain = null;
+    for (let i = 1; i < inR.length; i++) {
+      if (inR[i].weight != null && inR[i-1].weight != null) {
+        const d = inR[i].weight - inR[i-1].weight;
+        if (biggestGain == null || d > biggestGain) biggestGain = d;
+      }
+    }
+    const o2RestVals = nums("o2Rest"), o2ExVals = nums("o2Exertion"), dyspneaVals = nums("dyspnea"), pillowVals = nums("pillows");
+
+    return {
+      daysLogged: n,
+      firstDay: inR[0]?.date || null,
+      lastDay: inR[n-1]?.date || null,
+      lastWeight: weights.length ? weights[weights.length-1] : null,
+      lowestWeight: weights.length ? Math.min(...weights) : null,
+      highestWeight: weights.length ? Math.max(...weights) : null,
+      weightSwing: weights.length ? (Math.max(...weights) - Math.min(...weights)) : null,
+      biggestGain,
+      avgHr: avg(nums("hr")),
+      avgO2Rest: avg(o2RestVals),
+      lowestO2Rest: o2RestVals.length ? Math.min(...o2RestVals) : null,
+      lowestO2Exertion: o2ExVals.length ? Math.min(...o2ExVals) : null,
+      avgDyspnea: avg(dyspneaVals),
+      worstDyspnea: dyspneaVals.length ? Math.max(...dyspneaVals) : null,
+      avgFatigue: avg(nums("fatigue")),
+      daysSwelling23: countIf(c => c.edema === "moderate" || c.edema === "severe"),
+      daysBloating23: countIf(c => c.bloating === "moderate" || c.bloating === "severe"),
+      nightsWokeSob: countIf(c => c.wokeSob),
+      mostPillows: pillowVals.length ? Math.max(...pillowVals) : null,
+      daysDizzy: countIf(c => c.dizziness),
+      daysSyncope: countIf(c => c.syncope),
+      daysChestPain: countIf(c => c.chestPain >= 1),
+      daysPalpitations: countIf(c => c.palpitations),
+      daysHemoptysis: countIf(c => c.hemoptysis),
+      daysMissedMeds: countIf(c => c.medsTaken && Object.values(c.medsTaken).some(v => v === false)),
+      daysPrn: countIf(c => c.prnDiuretic),
+      daysSideEffect: countIf(c => c.newSideEffect),
+      daysOverSalt: countIf(c => c.overSalt),
+      avgFluidOz: avg(nums("fluidOz")),
+      avgSleep: avg(nums("sleepHours")),
+      avgMood: avg(nums("mood")),
+      daysFlagged: countIf(c => c.flagged),
+    };
+  }
+
+  function renderVisitPrepSummary() {
+    const s = computeVisitSummary($("#vp-from").value, $("#vp-to").value);
+    const f1 = (v) => v == null ? "" : v.toFixed(1);
+    const f0 = (v) => v == null ? "" : v.toFixed(0);
+    const rows = [
+      ["Days logged", s.daysLogged, ""],
+      ["First day logged", fmtDate(s.firstDay), ""],
+      ["Most recent day logged", fmtDate(s.lastDay), ""],
+      ["Most recent weight (lb)", s.lastWeight ?? "", ""],
+      ["Lowest weight in this period (lb)", s.lowestWeight ?? "", ""],
+      ["Highest weight in this period (lb)", s.highestWeight ?? "", ""],
+      ["Total weight swing (lb)", f1(s.weightSwing), "How much my weight moved from lowest to highest"],
+      ["Biggest single-day weight gain (lb)", s.biggestGain != null ? (s.biggestGain>=0?"+":"")+s.biggestGain.toFixed(1) : "", ""],
+      ["Average resting heart rate", f0(s.avgHr), ""],
+      ["Average resting SpO₂ (%)", f0(s.avgO2Rest), ""],
+      ["Lowest resting SpO₂ (%)", s.lowestO2Rest ?? "", ""],
+      ["Lowest SpO₂ after walking (%)", s.lowestO2Exertion ?? "", "In PAH this often matters more than the resting number"],
+      ["Average breathlessness with activity (0–10)", f1(s.avgDyspnea), ""],
+      ["Worst breathlessness with activity (0–10)", s.worstDyspnea ?? "", ""],
+      ["Average fatigue (0–10)", f1(s.avgFatigue), ""],
+      ["Days with swelling rated 2 or 3", s.daysSwelling23, ""],
+      ["Days with belly bloating rated 2 or 3", s.daysBloating23, ""],
+      ["Nights I woke up short of breath", s.nightsWokeSob, ""],
+      ["Most pillows needed in one night", s.mostPillows ?? "", ""],
+      ["Days with dizziness", s.daysDizzy, ""],
+      ["Days with near-fainting or fainting", s.daysSyncope, "Any number above zero here deserves airtime in the appointment"],
+      ["Days with chest pain rated 1 or more", s.daysChestPain, ""],
+      ["Days with palpitations", s.daysPalpitations, ""],
+      ["Days I coughed up blood", s.daysHemoptysis, ""],
+      ["Days I missed or partly missed meds", s.daysMissedMeds, "Be honest here — it changes how everything else is read"],
+      ["Days I took an extra (PRN) diuretic", s.daysPrn, ""],
+      ["Days I noted a new side effect", s.daysSideEffect, ""],
+      ["Days over my salt limit", s.daysOverSalt, ""],
+      ["Average fluid intake (oz)", f0(s.avgFluidOz), ""],
+      ["Average sleep (hours)", f1(s.avgSleep), ""],
+      ["Average mood (0–10, 10 = best)", f1(s.avgMood), ""],
+      ["Days flagged for review", s.daysFlagged, ""],
+    ];
+    $("#vpSummary").innerHTML = `<div class="card"><div class="table-scroll"><table><tbody>
+      ${rows.map(r => `<tr><td style="width:45%;">${esc(r[0])}</td><td class="tabular" style="font-weight:700;">${esc(r[1])}</td><td class="small muted">${esc(r[2])}</td></tr>`).join("")}
+    </tbody></table></div></div>`;
+  }
+  $("#vp-apply").addEventListener("click", renderVisitPrepSummary);
+  $("#vp-print").addEventListener("click", () => window.print());
+
+  const VP_OWN_WORDS = [
+    { key: "comparedToLastVisit", label: "Compared with my last visit I am…", hint: "better / the same / worse — and in what specific way" },
+    { key: "singleThing", label: "The single thing that bothers me most right now", hint: "Name one. It's what you'll actually get time to solve." },
+    { key: "canDoNow", label: "What I can do now that I couldn't at my last visit" },
+    { key: "couldDoBefore", label: "What I could do at my last visit that I can't now", hint: "Be concrete: stairs, showering, cooking, grocery store" },
+    { key: "walkDistance", label: "How far I can walk before I have to stop" },
+    { key: "breathingDifferent", label: "How my breathing is different" },
+    { key: "newSymptoms", label: "New symptoms since last visit" },
+    { key: "symptomsImproved", label: "Symptoms that have gone away or improved" },
+    { key: "sideEffectsToAddress", label: "Side effects I want addressed", hint: "Cross-reference the Meds tab" },
+    { key: "medsIssues", label: "Medications I've missed, cut, or couldn't afford / get filled", hint: "Say it plainly — this is common and fixable" },
+    { key: "betweenVisits", label: "Anything that happened between visits", hint: "ER trips, falls, infections, fainting — see the Events tab" },
+    { key: "changesAtHome", label: "Changes at home", hint: "New stairs, moved, caregiver changes, work changes, insurance changes" },
+    { key: "emotional", label: "How I'm doing emotionally", hint: "Anxiety and low mood are extremely common with PAH and heart failure, they affect outcomes, and they are treatable. Worth saying out loud." },
+    { key: "sleepNotes", label: "Sleep", hint: "Snoring, gasping, daytime sleepiness — ask about a sleep study if this is an issue" },
+    { key: "goal", label: "What I want to be able to do that I currently can't", hint: "This is how you and your team set a shared goal" },
+  ];
+  const VP_QUESTIONS = [
+    { key: "q1", label: "Question 1" },
+    { key: "q2", label: "Question 2" },
+    { key: "q3", label: "Question 3" },
+  ];
+  const VP_AFTER = [
+    { key: "decided", label: "What we decided" },
+    { key: "medChanges", label: "Medication changes (what, when to start)" },
+    { key: "testsOrdered", label: "Tests or referrals ordered" },
+    { key: "whatToWatch", label: "What they told me to watch for" },
+    { key: "seeSoonerIf", label: "What would make them want to see me sooner" },
+    { key: "nextApptDate", label: "Next appointment date", type: "date" },
+    { key: "nextLabsDate", label: "Next labs / echo / walk test due" },
+    { key: "forgotToAsk", label: "Anything I forgot to ask (bring to next visit)" },
+  ];
+
+  function vpSectionHtml(title, rows) {
+    return `
+      <div class="section-title" style="margin-top:20px;"><h2 style="font-size:16px;">${esc(title)}</h2></div>
+      <div class="card"><table><tbody>
+        ${rows.map(r => `<tr>
+          <td style="width:30%;">${esc(r.label)}</td>
+          <td><input type="${r.type||"text"}" data-field="${esc(r.key)}" value="${esc(visitPrepData[r.key]||"")}"></td>
+          <td class="small muted" style="width:28%;">${esc(r.hint||"")}</td>
+        </tr>`).join("")}
+      </tbody></table></div>
+    `;
+  }
+  function renderVisitPrepFreeText() {
+    $("#vpFreeText").innerHTML =
+      vpSectionHtml("In my own words", VP_OWN_WORDS) +
+      vpSectionHtml("My top 3 questions — ask these first, before anything else", VP_QUESTIONS) +
+      vpSectionHtml("After the visit — fill in before you leave the parking lot", VP_AFTER);
+  }
+  function saveVisitPrepField(key, value) {
+    if (!db) return;
+    visitPrepData = Object.assign({}, visitPrepData, { [key]: value });
+    db.doc("visitPrep/main").set(visitPrepData).catch(err => alert(err.message));
+  }
+  $("#vpFreeText").addEventListener("change", (e) => {
+    const el = e.target.closest("[data-field]");
+    if (el) saveVisitPrepField(el.dataset.field, el.value);
+  });
+
+  // ---------- action plan ----------
+  function renderActionPlan() {
+    const v = (k) => esc(actionPlanData[k] || "");
+    $("#actionPlanBody").innerHTML = `
+      <div class="card">
+        <p class="small muted" style="margin:0;">The numbers below are blank on purpose. Zone thresholds are individual — they depend on your dry weight, your kidney function, your baseline oxygen, your diuretic, and your team's judgment. Ask your PH or heart failure clinic to write YOUR numbers in, and to tell you which phone number goes with which zone. Until then, when in doubt, call — don't wait.</p>
+      </div>
+
+      <div class="section-title" style="margin-top:20px;"><h2 style="font-size:16px; color:var(--teal-deep);">GREEN — my usual self</h2></div>
+      <div class="card">
+        <ul class="ap-list">
+          <li>☐ Weight is within <input class="blank" data-field="greenWeightMargin" value="${v("greenWeightMargin")}"> lb of my dry weight</li>
+          <li>☐ Breathing is the same as usual for me</li>
+          <li>☐ No new swelling; shoes and rings fit as normal</li>
+          <li>☐ I can do my usual activity with my usual amount of effort</li>
+          <li>☐ Sleeping flat on my usual number of pillows</li>
+          <li>☐ Taking all my medications as prescribed</li>
+        </ul>
+        <p class="small" style="margin:10px 0 0;"><b>What I do:</b> keep going. Weigh daily, take meds, stay within my fluid and sodium plan, keep moving as advised.</p>
+      </div>
+
+      <div class="section-title" style="margin-top:20px;"><h2 style="font-size:16px; color:var(--amber);">YELLOW — something is changing, call my team</h2></div>
+      <div class="card">
+        <ul class="ap-list">
+          <li>☐ Weight up <input class="blank" data-field="yellowGainDay" value="${v("yellowGainDay")}"> lb in one day, or <input class="blank" data-field="yellowGainWeek" value="${v("yellowGainWeek")}"> lb in one week</li>
+          <li>☐ New or worse swelling in ankles, legs, or belly</li>
+          <li>☐ More short of breath than usual with my normal activity</li>
+          <li>☐ Needing more pillows, or waking up short of breath</li>
+          <li>☐ Resting oxygen at or below <input class="blank" data-field="yellowO2" value="${v("yellowO2")}"> %</li>
+          <li>☐ Dry hacking cough, or new dizziness</li>
+          <li>☐ More tired than usual, or losing my appetite / full quickly</li>
+          <li>☐ Resting heart rate consistently above <input class="blank" data-field="yellowHrHigh" value="${v("yellowHrHigh")}"> or below <input class="blank" data-field="yellowHrLow" value="${v("yellowHrLow")}"></li>
+        </ul>
+        <p class="small" style="margin:10px 0 0;"><b>What I do:</b> call <input class="blank wide" data-field="yellowPhoneName" value="${v("yellowPhoneName")}" placeholder="who"> at <input class="blank wide" data-field="yellowPhoneNumber" value="${v("yellowPhoneNumber")}" placeholder="number"> during business hours. Don't wait for the next appointment. Write it in the Events tab.</p>
+      </div>
+
+      <div class="section-title" style="margin-top:20px;"><h2 style="font-size:16px; color:var(--coral);">RED — get help now</h2></div>
+      <div class="card">
+        <ul class="ap-list">
+          <li>☐ Struggling to breathe at rest, or can't speak in full sentences</li>
+          <li>☐ Chest pain or pressure</li>
+          <li>☐ Fainting, or nearly fainting</li>
+          <li>☐ Coughing up blood</li>
+          <li>☐ Confusion, or a sudden change in alertness</li>
+          <li>☐ Blue or gray lips or fingertips</li>
+          <li>☐ Oxygen saturation at or below <input class="blank" data-field="redO2" value="${v("redO2")}"> % and not coming up</li>
+          <li>☐ My infusion pump has stopped or the line is disconnected</li>
+        </ul>
+        <p class="small" style="margin:10px 0 0;"><b>What I do:</b> call 911 / go to the ER. Tell them I have pulmonary arterial hypertension and name my infusion medication if I'm on one. Emergency number for my PH team: <input class="blank wide" data-field="emergencyPhone" value="${v("emergencyPhone")}" placeholder="number"></p>
+      </div>
+
+      <div class="section-title" style="margin-top:20px;"><h2 style="font-size:16px;">Signed off with my team</h2></div>
+      <div class="card"><table><tbody>
+        <tr><td style="width:35%;">Reviewed with (clinician)</td><td><input type="text" data-field="reviewedWith" value="${v("reviewedWith")}"></td></tr>
+        <tr><td>Date reviewed</td><td><input type="date" data-field="dateReviewed" value="${v("dateReviewed")}"></td></tr>
+        <tr><td>Next review date</td><td><input type="date" data-field="nextReviewDate" value="${v("nextReviewDate")}"></td></tr>
+        <tr><td>Anything they want me to track that isn't in this workbook</td><td><input type="text" data-field="trackExtra" value="${v("trackExtra")}"></td></tr>
+        <tr><td>Anything in this workbook they DON'T need</td><td><input type="text" data-field="dontNeed" value="${v("dontNeed")}"></td></tr>
+      </tbody></table></div>
+    `;
+  }
+  function saveActionPlanField(key, value) {
+    if (!db) return;
+    actionPlanData = Object.assign({}, actionPlanData, { [key]: value });
+    db.doc("actionPlan/main").set(actionPlanData).catch(err => alert(err.message));
+  }
+  $("#actionPlanBody").addEventListener("change", (e) => {
+    const el = e.target.closest("[data-field]");
+    if (el) saveActionPlanField(el.dataset.field, el.value);
+  });
+  $("#ap-print").addEventListener("click", () => window.print());
+
   // ---------- report ----------
   $("#rp-from").value = (() => { const d = new Date(); d.setDate(d.getDate()-90); return d.toISOString().slice(0,10); })();
   $("#rp-to").value = todayStr();
@@ -1556,7 +2013,7 @@
         </tr>`).join("")}</tbody></table></div>` : `<p class="muted small">No check-ins in this range.</p>`}</div>
 
       <div class="section-title"><h2>Complete packets on hand</h2></div>
-      <div class="card"><div class="grid cols-2">${PACKETS.map(p => { const st = packetStatus(p); return `<div class="stat"><span class="label">${esc(p.name)}s</span><span class="value tabular">${st.ready}</span><span class="delta">limited by ${esc(st.limiting.map(l=>l.name).join(", "))}</span></div>`; }).join("")}</div></div>
+      <div class="card"><div class="grid cols-2">${PACKETS.map(p => { const st = packetStatus(p); return `<div class="stat"><span class="label">${esc(p.name)}s</span><span class="value tabular">${completedCount(p.id)}</span><span class="delta">+ could assemble ${st.ready} more from loose supplies</span></div>`; }).join("")}</div></div>
 
       <div class="section-title"><h2>Supplies needing reorder</h2></div>
       <div class="card">${low.length ? `<ul>${low.map(s => `<li>${esc(s.name)} — ${s.qtyOnHand} ${esc(s.unit)} on hand (reorder at ${s.reorderThreshold})</li>`).join("")}</ul>` : `<p class="muted small">Nothing currently below its reorder point.</p>`}</div>
@@ -1565,8 +2022,8 @@
 
   $("#rp-csv-checkins").addEventListener("click", () => downloadCsv(
     "checkins.csv",
-    [["date","who_class","six_mwt_m","o2_rest","o2_exertion","hr","bp_sys","bp_dia","weight_lb","dyspnea_0_10","fatigue_0_10","edema","edema_location","chest_pain","dizziness","palpitations","site_issues","pump_alarm","pump_notes","notes"]]
-      .concat(checkins.slice().sort((a,b)=>a.date<b.date?-1:1).map(c => [c.date,c.whoClass,c.sixMwt,c.o2Rest,c.o2Exertion,c.hr,c.bpSys,c.bpDia,c.weight,c.dyspnea,c.fatigue,c.edema,c.edemaLocation,c.chestPain,c.dizziness,c.palpitations,(c.siteIssues||[]).join(" "),c.pumpAlarm,c.pumpNotes,c.notes]))
+    [["date","who_class","six_mwt_m","o2_rest","o2_exertion","hr","bp_sys","bp_dia","weight_lb","dyspnea_0_10","fatigue_0_10","chest_pain_0_10","pillows","cough","woke_sob","hemoptysis","edema","edema_location","bloating","dizziness","syncope","palpitations","prn_diuretic","over_salt_limit","fluid_oz","meds_notes","new_side_effect","side_effect_notes","activity","life_notes","sleep_hours","mood_0_10","site_issues","pump_alarm","pump_notes","notes","flagged"]]
+      .concat(checkins.slice().sort((a,b)=>a.date<b.date?-1:1).map(c => [c.date,c.whoClass,c.sixMwt,c.o2Rest,c.o2Exertion,c.hr,c.bpSys,c.bpDia,c.weight,c.dyspnea,c.fatigue,c.chestPain,c.pillows,c.cough,c.wokeSob,c.hemoptysis,c.edema,c.edemaLocation,c.bloating,c.dizziness,c.syncope,c.palpitations,c.prnDiuretic,c.overSalt,c.fluidOz,c.medsNotes,c.newSideEffect,c.sideEffectNotes,c.activity,c.lifeNotes,c.sleepHours,c.mood,(c.siteIssues||[]).join(" "),c.pumpAlarm,c.pumpNotes,c.notes,c.flagged]))
   ));
   $("#rp-csv-meds").addEventListener("click", () => downloadCsv(
     "medications.csv",
@@ -1603,6 +2060,7 @@
       setSync(false);
       renderDashboard(); renderCheckinHistory(); renderMeds(); renderChangeHistory(); renderSupplies();
       renderCheckinMedsTaken(null); renderTitrationHistory(); renderLabelCard(); renderLabs(); renderEvents();
+      renderVisitPrepSummary(); renderVisitPrepFreeText(); renderActionPlan();
       return;
     }
     setSync(true);
@@ -1611,6 +2069,7 @@
       checkins = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
       renderDashboard(); renderCheckinHistory();
       if (!$("#tab-report").hidden) renderReport();
+      if (!$("#tab-visitprep").hidden) renderVisitPrepSummary();
     }, () => setSync(false));
 
     db.collection("medications").onSnapshot(snap => {
@@ -1634,6 +2093,13 @@
       if (!$("#tab-report").hidden) renderReport();
     }, () => setSync(false));
 
+    db.collection("packetInventory").onSnapshot(snap => {
+      packetInventory = {};
+      snap.docs.forEach(d => { packetInventory[d.id] = d.data(); });
+      renderDashboard(); renderPacketSummary();
+      if (!$("#tab-report").hidden) renderReport();
+    }, () => setSync(false));
+
     db.collection("titrations").onSnapshot(snap => {
       titrations = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
       renderTitrationHistory(); renderLabelCard();
@@ -1653,6 +2119,16 @@
       profile = snap.exists ? snap.data() : {};
       if (document.activeElement !== $("#pt-name")) $("#pt-name").value = profile.patientName || "";
       if (document.activeElement !== $("#pt-prescriber")) $("#pt-prescriber").value = profile.prescriberName || "";
+    }, () => setSync(false));
+
+    db.doc("visitPrep/main").onSnapshot(snap => {
+      visitPrepData = snap.exists ? snap.data() : {};
+      if (!document.activeElement || !document.activeElement.closest("#vpFreeText")) renderVisitPrepFreeText();
+    }, () => setSync(false));
+
+    db.doc("actionPlan/main").onSnapshot(snap => {
+      actionPlanData = snap.exists ? snap.data() : {};
+      if (!document.activeElement || !document.activeElement.closest("#actionPlanBody")) renderActionPlan();
     }, () => setSync(false));
   }
 
