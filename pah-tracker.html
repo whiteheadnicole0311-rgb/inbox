@@ -443,6 +443,8 @@
             <select id="f-labTest">
               <option>NT-proBNP</option>
               <option>BNP</option>
+              <option>CBC (panel)</option>
+              <option>CMP (panel)</option>
               <option>Hemoglobin</option>
               <option>Creatinine</option>
               <option>AST / ALT</option>
@@ -457,7 +459,7 @@
             <input type="text" id="f-labTestOther" placeholder="e.g. Sodium">
           </div>
         </div>
-        <div class="field-row">
+        <div class="field-row" id="lab-single">
           <div class="field">
             <label for="f-labValue">Result</label>
             <input type="number" step="any" id="f-labValue" placeholder="e.g. 480">
@@ -476,6 +478,23 @@
             </select>
           </div>
         </div>
+        <div class="field-row" id="lab-cbc" hidden>
+          <div class="field"><label for="f-cbcHgb">Hemoglobin <span class="hint">g/dL</span></label><input type="number" step="any" id="f-cbcHgb"></div>
+          <div class="field"><label for="f-cbcHct">Hematocrit <span class="hint">%</span></label><input type="number" step="any" id="f-cbcHct"></div>
+          <div class="field"><label for="f-cbcWbc">WBC <span class="hint">K/µL</span></label><input type="number" step="any" id="f-cbcWbc"></div>
+          <div class="field"><label for="f-cbcPlt">Platelets <span class="hint">K/µL</span></label><input type="number" step="any" id="f-cbcPlt"></div>
+        </div>
+        <div class="field-row" id="lab-cmp" hidden>
+          <div class="field"><label for="f-cmpNa">Sodium <span class="hint">mEq/L</span></label><input type="number" step="any" id="f-cmpNa"></div>
+          <div class="field"><label for="f-cmpK">Potassium <span class="hint">mEq/L</span></label><input type="number" step="any" id="f-cmpK"></div>
+          <div class="field"><label for="f-cmpCr">Creatinine <span class="hint">mg/dL</span></label><input type="number" step="any" id="f-cmpCr"></div>
+          <div class="field"><label for="f-cmpBun">BUN <span class="hint">mg/dL</span></label><input type="number" step="any" id="f-cmpBun"></div>
+          <div class="field"><label for="f-cmpGlu">Glucose <span class="hint">mg/dL</span></label><input type="number" step="any" id="f-cmpGlu"></div>
+          <div class="field"><label for="f-cmpAst">AST <span class="hint">U/L</span></label><input type="number" step="any" id="f-cmpAst"></div>
+          <div class="field"><label for="f-cmpAlt">ALT <span class="hint">U/L</span></label><input type="number" step="any" id="f-cmpAlt"></div>
+          <div class="field"><label for="f-cmpBili">Total bilirubin <span class="hint">mg/dL</span></label><input type="number" step="any" id="f-cmpBili"></div>
+        </div>
+        <p class="hint" id="lab-panel-hint" hidden style="margin:-8px 0 14px;">Leave components blank if they weren't drawn. Auto-flagged against general adult reference ranges — your lab's own ranges may differ.</p>
       </fieldset>
 
       <fieldset id="fs-imaging" class="cat-fieldset" hidden>
@@ -709,6 +728,7 @@
         { id: uid(), category: "lab", date: daysAgo(200), labTest: "NT-proBNP", value: 620, unit: "pg/mL", flag: "high", notes: "" },
         { id: uid(), category: "functional", date: daysAgo(198), functionalType: "6mwt", distance: 380, spo2Start: 96, spo2Low: 89, borg: 4, notes: "" },
         { id: uid(), category: "medication", date: daysAgo(195), medName: "Ambrisentan", medDose: "10 mg", medFreq: "once daily", medRoute: "Oral", medAction: "Started", notes: "" },
+        { id: uid(), category: "lab", date: daysAgo(160), labTest: "CBC (panel)", panel: { hemoglobin: 17.8, hematocrit: 53, wbc: 7.2, platelets: 210 }, notes: "Mild erythrocytosis, likely from chronic hypoxia." },
         { id: uid(), category: "vitals", date: daysAgo(150), vSpo2: 95, vHr: 82, vBpSys: 118, vBpDia: 74, vWeight: 148, notes: "" },
         { id: uid(), category: "lab", date: daysAgo(110), labTest: "NT-proBNP", value: 410, unit: "pg/mL", flag: "high", notes: "Trending down since starting ERA." },
         { id: uid(), category: "functional", date: daysAgo(105), functionalType: "6mwt", distance: 415, spo2Start: 97, spo2Low: 91, borg: 3, notes: "" },
@@ -716,6 +736,7 @@
         { id: uid(), category: "vitals", date: daysAgo(60), vSpo2: 96, vHr: 78, vBpSys: 114, vBpDia: 72, vWeight: 146, notes: "" },
         { id: uid(), category: "note", date: daysAgo(45), visitType: "PAH follow-up", clinician: "Dr. Alvarez, PH clinic", questions: "Discuss adding inhaled treprostinil.", notes: "Functional class improved to II." },
         { id: uid(), category: "functional", date: daysAgo(45), functionalType: "whofc", whoClass: "II", notes: "" },
+        { id: uid(), category: "lab", date: daysAgo(35), labTest: "CMP (panel)", panel: { sodium: 138, potassium: 4.1, creatinine: 1.4, bun: 24, glucose: 96, ast: 32, alt: 29, bilirubin: 0.8 }, notes: "Creatinine up slightly after diuretic dose increase." },
         { id: uid(), category: "lab", date: daysAgo(30), labTest: "NT-proBNP", value: 455, unit: "pg/mL", flag: "high", notes: "" },
         { id: uid(), category: "vitals", date: daysAgo(14), vSpo2: 94, vHr: 84, vBpSys: 120, vBpDia: 76, vWeight: 150, notes: "Slight weight gain, watching for fluid retention." },
         { id: uid(), category: "functional", date: daysAgo(7), functionalType: "6mwt", distance: 392, spo2Start: 95, spo2Low: 88, borg: 5, notes: "" }
@@ -735,6 +756,35 @@
   }
 
   var CATEGORY_LABELS = { lab: "Blood test", imaging: "Imaging", functional: "Functional", vitals: "Vitals", medication: "Medication", note: "Note" };
+
+  // General adult reference ranges, used only to auto-flag CBC/CMP panel components.
+  // A patient's own lab may use different ranges.
+  var REFERENCE_RANGES = {
+    hemoglobin: { label: "Hgb", unit: "g/dL", low: 12.0, high: 17.5 },
+    hematocrit: { label: "Hct", unit: "%", low: 36, high: 50 },
+    wbc: { label: "WBC", unit: "K/µL", low: 4.5, high: 11.0, criticalLow: 2.0, criticalHigh: 30 },
+    platelets: { label: "Plt", unit: "K/µL", low: 150, high: 450, criticalLow: 50 },
+    sodium: { label: "Na", unit: "mEq/L", low: 135, high: 145, criticalLow: 120, criticalHigh: 160 },
+    potassium: { label: "K", unit: "mEq/L", low: 3.5, high: 5.0, criticalLow: 2.5, criticalHigh: 6.5 },
+    creatinine: { label: "Cr", unit: "mg/dL", low: 0.6, high: 1.3 },
+    bun: { label: "BUN", unit: "mg/dL", low: 7, high: 20 },
+    glucose: { label: "Glu", unit: "mg/dL", low: 70, high: 140 },
+    ast: { label: "AST", unit: "U/L", low: 10, high: 40 },
+    alt: { label: "ALT", unit: "U/L", low: 7, high: 56 },
+    bilirubin: { label: "T.Bili", unit: "mg/dL", low: 0.1, high: 1.2 }
+  };
+  var CBC_FIELDS = ["hemoglobin", "hematocrit", "wbc", "platelets"];
+  var CMP_FIELDS = ["sodium", "potassium", "creatinine", "bun", "glucose", "ast", "alt", "bilirubin"];
+
+  function flagForRange(key, value) {
+    var r = REFERENCE_RANGES[key];
+    if (!r || value === undefined || value === null || isNaN(value)) return "normal";
+    if (r.criticalLow != null && value <= r.criticalLow) return "critical";
+    if (r.criticalHigh != null && value >= r.criticalHigh) return "critical";
+    if (value < r.low) return "low";
+    if (value > r.high) return "high";
+    return "normal";
+  }
 
   // ---------- tabs ----------
   var views = ["overview", "add", "records", "summary"];
@@ -843,6 +893,29 @@
       pill: bnpLast ? { color: labFlagColor(bnpLast.flag), text: labFlagText(bnpLast.flag) } : null
     });
 
+    function labComponentSeries(componentKey, standaloneTestName) {
+      var out = [];
+      entriesByCategory("lab").forEach(function (e) {
+        if (standaloneTestName && e.labTest === standaloneTestName && e.value != null) out.push({ date: e.date, value: e.value });
+        else if (e.panel && e.panel[componentKey] != null) out.push({ date: e.date, value: e.panel[componentKey] });
+      });
+      return sortedByDate(out);
+    }
+
+    var hgbSeries = labComponentSeries("hemoglobin", "Hemoglobin");
+    var hgbLast = hgbSeries[hgbSeries.length - 1];
+    renderTile(tiles, {
+      label: "Hemoglobin", unit: "g/dL", decimals: 1, series: hgbSeries, higherIsBetter: true,
+      pill: hgbLast ? { color: labFlagColor(flagForRange("hemoglobin", hgbLast.value)), text: labFlagText(flagForRange("hemoglobin", hgbLast.value)) } : null
+    });
+
+    var crSeries = labComponentSeries("creatinine", "Creatinine");
+    var crLast = crSeries[crSeries.length - 1];
+    renderTile(tiles, {
+      label: "Creatinine", unit: "mg/dL", decimals: 2, series: crSeries, higherIsBetter: false,
+      pill: crLast ? { color: labFlagColor(flagForRange("creatinine", crLast.value)), text: labFlagText(flagForRange("creatinine", crLast.value)) } : null
+    });
+
     var sixmwt = sortedByDate(entriesByCategory("functional").filter(function (e) { return e.functionalType === "6mwt" && e.distance != null; }));
     renderTile(tiles, {
       label: "6-minute walk distance",
@@ -931,11 +1004,19 @@
     });
   });
 
-  document.getElementById("f-labTest").addEventListener("change", function () {
-    document.getElementById("f-labTestOtherWrap").hidden = this.value !== "Other";
+  function updateLabFieldVisibility() {
+    var v = document.getElementById("f-labTest").value;
+    document.getElementById("f-labTestOtherWrap").hidden = v !== "Other";
+    var isCbc = v === "CBC (panel)";
+    var isCmp = v === "CMP (panel)";
+    document.getElementById("lab-single").hidden = isCbc || isCmp;
+    document.getElementById("lab-cbc").hidden = !isCbc;
+    document.getElementById("lab-cmp").hidden = !isCmp;
+    document.getElementById("lab-panel-hint").hidden = !(isCbc || isCmp);
     var units = { "NT-proBNP": "pg/mL", "BNP": "pg/mL", "Hemoglobin": "g/dL", "Creatinine": "mg/dL", "AST / ALT": "U/L", "INR": "", "Ferritin / Iron saturation": "ng/mL", "Uric acid": "mg/dL" };
-    if (units[this.value] !== undefined) document.getElementById("f-labUnit").value = units[this.value];
-  });
+    if (units[v] !== undefined) document.getElementById("f-labUnit").value = units[v];
+  }
+  document.getElementById("f-labTest").addEventListener("change", updateLabFieldVisibility);
 
   document.getElementById("f-imagingType").addEventListener("change", function () {
     document.getElementById("imaging-echo").hidden = this.value !== "Echocardiogram";
@@ -957,11 +1038,24 @@
     var entry = { id: uid(), category: currentCategory, date: date, notes: val("f-notes") || "" };
 
     if (currentCategory === "lab") {
-      entry.labTest = val("f-labTest") === "Other" ? (val("f-labTestOther") || "Other") : val("f-labTest");
-      entry.value = numVal("f-labValue");
-      entry.unit = val("f-labUnit") || "";
-      entry.flag = val("f-labFlag") || "normal";
-      if (entry.value === undefined) { document.getElementById("f-labValue").focus(); return; }
+      var labTestSel = val("f-labTest");
+      if (labTestSel === "CBC (panel)" || labTestSel === "CMP (panel)") {
+        entry.labTest = labTestSel;
+        entry.panel = {};
+        var panelIds = { hemoglobin: "f-cbcHgb", hematocrit: "f-cbcHct", wbc: "f-cbcWbc", platelets: "f-cbcPlt", sodium: "f-cmpNa", potassium: "f-cmpK", creatinine: "f-cmpCr", bun: "f-cmpBun", glucose: "f-cmpGlu", ast: "f-cmpAst", alt: "f-cmpAlt", bilirubin: "f-cmpBili" };
+        var keys = labTestSel === "CBC (panel)" ? CBC_FIELDS : CMP_FIELDS;
+        keys.forEach(function (k) {
+          var v = numVal(panelIds[k]);
+          if (v !== undefined) entry.panel[k] = v;
+        });
+        if (Object.keys(entry.panel).length === 0) { document.getElementById(panelIds[keys[0]]).focus(); return; }
+      } else {
+        entry.labTest = labTestSel === "Other" ? (val("f-labTestOther") || "Other") : labTestSel;
+        entry.value = numVal("f-labValue");
+        entry.unit = val("f-labUnit") || "";
+        entry.flag = val("f-labFlag") || "normal";
+        if (entry.value === undefined) { document.getElementById("f-labValue").focus(); return; }
+      }
     } else if (currentCategory === "imaging") {
       entry.imagingType = val("f-imagingType");
       if (entry.imagingType === "Echocardiogram") {
@@ -993,6 +1087,7 @@
 
     document.getElementById("entryForm").reset();
     document.getElementById("f-date").value = date;
+    updateLabFieldVisibility();
     var msg = document.getElementById("formMsg");
     msg.hidden = false;
     setTimeout(function () { msg.hidden = true; }, 2200);
@@ -1005,7 +1100,18 @@
   var searchTerm = "";
 
   function entrySummary(e) {
-    if (e.category === "lab") return e.labTest + ": " + (e.value != null ? e.value : "—") + (e.unit ? " " + e.unit : "") + " (" + labFlagText(e.flag) + ")";
+    if (e.category === "lab") {
+      if (e.panel) {
+        var parts = Object.keys(e.panel).map(function (k) {
+          var r = REFERENCE_RANGES[k];
+          var f = flagForRange(k, e.panel[k]);
+          var suffix = f !== "normal" ? " (" + labFlagText(f) + ")" : "";
+          return (r ? r.label : k) + " " + e.panel[k] + (r ? " " + r.unit : "") + suffix;
+        });
+        return e.labTest + ": " + (parts.join(", ") || "no components recorded");
+      }
+      return e.labTest + ": " + (e.value != null ? e.value : "—") + (e.unit ? " " + e.unit : "") + " (" + labFlagText(e.flag) + ")";
+    }
     if (e.category === "imaging") {
       var bits = [e.imagingType];
       if (e.rvsp != null) bits.push("RVSP " + e.rvsp + " mmHg");
