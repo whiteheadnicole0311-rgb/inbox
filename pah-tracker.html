@@ -1,0 +1,1146 @@
+<!doctype html>
+<title>Wedge & Walk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #F3F6F6;
+    --surface: #FFFFFF;
+    --surface-2: #E9EFEF;
+    --ink: #16232B;
+    --ink-secondary: #4B5F68;
+    --ink-muted: #7C8D94;
+    --line: rgba(22,35,43,0.13);
+    --line-strong: rgba(22,35,43,0.22);
+    --accent: #0E7490;
+    --accent-strong: #0B5A70;
+    --accent-soft: rgba(14,116,144,0.11);
+    --accent-ink: #FFFFFF;
+    --good: #0ca30c;
+    --good-soft: rgba(12,163,12,0.12);
+    --warning: #b8790a;
+    --warning-soft: rgba(250,178,25,0.20);
+    --serious: #c65a2e;
+    --serious-soft: rgba(236,131,90,0.18);
+    --critical: #d03b3b;
+    --critical-soft: rgba(208,59,59,0.12);
+    --shadow: 0 1px 2px rgba(16,24,29,0.06), 0 6px 20px rgba(16,24,29,0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #0D1417;
+      --surface: #16222A;
+      --surface-2: #1D2B33;
+      --ink: #E9EFF0;
+      --ink-secondary: #ADBDC2;
+      --ink-muted: #7E9096;
+      --line: rgba(233,239,240,0.14);
+      --line-strong: rgba(233,239,240,0.24);
+      --accent: #37B6CC;
+      --accent-strong: #6ED2E4;
+      --accent-soft: rgba(55,182,204,0.16);
+      --accent-ink: #06232A;
+      --good: #33c23a;
+      --good-soft: rgba(51,194,58,0.16);
+      --warning: #fab219;
+      --warning-soft: rgba(250,178,25,0.16);
+      --serious: #ec835a;
+      --serious-soft: rgba(236,131,90,0.18);
+      --critical: #e66767;
+      --critical-soft: rgba(230,103,103,0.16);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #0D1417;
+    --surface: #16222A;
+    --surface-2: #1D2B33;
+    --ink: #E9EFF0;
+    --ink-secondary: #ADBDC2;
+    --ink-muted: #7E9096;
+    --line: rgba(233,239,240,0.14);
+    --line-strong: rgba(233,239,240,0.24);
+    --accent: #37B6CC;
+    --accent-strong: #6ED2E4;
+    --accent-soft: rgba(55,182,204,0.16);
+    --accent-ink: #06232A;
+    --good: #33c23a;
+    --good-soft: rgba(51,194,58,0.16);
+    --warning: #fab219;
+    --warning-soft: rgba(250,178,25,0.16);
+    --serious: #ec835a;
+    --serious-soft: rgba(236,131,90,0.18);
+    --critical: #e66767;
+    --critical-soft: rgba(230,103,103,0.16);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .mono { font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--accent-strong); }
+
+  .shell { max-width: 980px; margin: 0 auto; padding-inline: 20px; }
+
+  header.app-bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .app-bar-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 16px 20px 0;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .brand-mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 2px 6px;
+  }
+  h1.title { font-size: 1.25rem; font-weight: 700; }
+  .subtitle { color: var(--ink-secondary); font-size: 0.85rem; margin: 2px 0 12px; }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav.tabs button {
+    appearance: none;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 9px 4px 10px;
+    margin-right: 18px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  nav.tabs button:hover { color: var(--ink-secondary); }
+  nav.tabs button[aria-selected="true"] {
+    color: var(--accent-strong);
+    border-bottom-color: var(--accent);
+  }
+  nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  main { padding-block: 20px 64px; }
+  section.view[hidden] { display: none; }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-size: 0.875rem;
+  }
+  .banner strong { color: var(--accent-strong); }
+  .banner .spacer { flex: 1 1 auto; }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .btn-ghost { background: none; border-color: transparent; color: var(--accent-strong); padding: 8px 8px; }
+  .btn-danger { color: var(--critical); }
+  .btn-sm { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; }
+
+  h2.section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    margin: 28px 0 12px;
+  }
+  h2.section-title:first-child { margin-top: 0; }
+
+  .tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .tile-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .tile-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .tile-value { font-family: 'IBM Plex Mono', monospace; font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
+  .tile-unit { font-size: 0.9rem; font-weight: 500; color: var(--ink-secondary); }
+  .tile-delta { font-size: 0.78rem; color: var(--ink-muted); display: flex; align-items: center; gap: 4px; }
+  .tile-delta.up { color: var(--critical); }
+  .tile-delta.down { color: var(--good); }
+  .tile-empty { color: var(--ink-muted); font-size: 0.85rem; padding: 6px 0 2px; }
+  .spark { width: 100%; height: 48px; display: block; margin-top: 2px; }
+  .spark-range { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--ink-muted); font-family: 'IBM Plex Mono', monospace; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); }
+  .pill-serious { background: var(--serious-soft); color: var(--serious); }
+  .pill-critical { background: var(--critical-soft); color: var(--critical); }
+  .pill-neutral { background: var(--surface-2); color: var(--ink-secondary); }
+
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .card-title { font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .card-title time { font-size: 0.75rem; color: var(--ink-muted); font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
+  dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 0.85rem; }
+  dl.kv dt { color: var(--ink-muted); }
+  dl.kv dd { margin: 0; font-family: 'IBM Plex Mono', monospace; font-weight: 600; text-align: right; }
+
+  form.entry-form {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    max-width: 640px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .field label { font-size: 0.78rem; font-weight: 600; color: var(--ink-secondary); }
+  .field .hint { font-size: 0.72rem; color: var(--ink-muted); font-weight: 400; }
+  .field input, .field select, .field textarea {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 0.9rem;
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  fieldset { border: none; padding: 0; margin: 0; }
+  .category-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .category-picker button {
+    appearance: none;
+    border: 1px solid var(--line-strong);
+    background: var(--surface-2);
+    color: var(--ink-secondary);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .category-picker button[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .form-actions { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+  .form-msg { font-size: 0.82rem; color: var(--good); font-weight: 600; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .toolbar input[type="search"] {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    min-width: 180px;
+    flex: 1 1 180px;
+  }
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    appearance: none;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-secondary);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+  table.records { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 560px; }
+  table.records th, table.records td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.records th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted); font-weight: 700; background: var(--surface-2); position: sticky; top: 0; }
+  table.records td.date { font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
+  table.records tbody tr:hover { background: var(--surface-2); }
+  table.records td.actions { white-space: nowrap; text-align: right; }
+  table.records tbody tr:last-child td { border-bottom: none; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-muted); }
+
+  .summary-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+  .summary-controls select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; }
+  .summary-group { margin-bottom: 20px; }
+  .summary-group h3 { font-size: 0.95rem; margin-bottom: 8px; }
+  .summary-item { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 0.87rem; }
+  .summary-item .s-date { font-family: 'IBM Plex Mono', monospace; color: var(--ink-muted); flex: 0 0 auto; }
+  .summary-item .s-detail { flex: 1 1 auto; text-align: right; }
+  textarea#questionsField, textarea#summaryText { width: 100%; }
+  textarea#summaryText { min-height: 220px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-size: 0.82rem; }
+
+  footer.hint-footer { max-width: 980px; margin: 0 auto; padding: 0 20px 40px; color: var(--ink-muted); font-size: 0.78rem; }
+
+  @media (max-width: 460px) {
+    .tile-value { font-size: 1.35rem; }
+  }
+
+  @media print {
+    header.app-bar, nav.tabs, .no-print { display: none !important; }
+    body { background: #fff; color: #000; font-size: 12px; }
+    section.view[hidden] { display: none !important; }
+    section.view:not(#view-summary) { display: none !important; }
+    .card, .tile { box-shadow: none; border-color: #999; }
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+
+<header class="app-bar">
+  <div class="app-bar-inner">
+    <div class="brand">
+      <span class="brand-mark">PAH</span>
+      <h1 class="title">Wedge &amp; Walk</h1>
+    </div>
+    <p class="subtitle">A private, on-this-device log of labs, imaging, and functional tests for pulmonary arterial hypertension follow-up.</p>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-btn-overview" aria-selected="true" data-view="overview">Overview</button>
+      <button role="tab" id="tab-btn-add" aria-selected="false" data-view="add">Log Entry</button>
+      <button role="tab" id="tab-btn-records" aria-selected="false" data-view="records">Records</button>
+      <button role="tab" id="tab-btn-summary" aria-selected="false" data-view="summary">Visit Summary</button>
+    </nav>
+  </div>
+</header>
+
+<main class="shell">
+
+  <div id="sampleBanner" class="banner no-print" hidden>
+    <span><strong>Sample data</strong> — these are example entries so you can see how the log works.</span>
+    <span class="spacer"></span>
+    <button class="btn btn-sm" id="clearSampleBtn" type="button">Clear samples &amp; start fresh</button>
+  </div>
+
+  <div id="storageWarning" class="banner no-print" hidden style="background:var(--warning-soft);">
+    <span>Your browser is blocking local storage, so entries won't be saved after you close this tab.</span>
+  </div>
+
+  <section class="view" id="view-overview">
+    <h2 class="section-title">Trends</h2>
+    <div class="tile-grid" id="trendTiles"></div>
+
+    <h2 class="section-title">Latest imaging &amp; procedures</h2>
+    <div class="card-row" id="imagingCards"></div>
+
+    <h2 class="section-title">Recent notes</h2>
+    <div class="card" id="notesCard"></div>
+  </section>
+
+  <section class="view" id="view-add" hidden>
+    <h2 class="section-title">What are you logging?</h2>
+    <div class="category-picker" id="categoryPicker">
+      <button type="button" data-cat="lab" aria-pressed="true">Blood test</button>
+      <button type="button" data-cat="imaging" aria-pressed="false">Imaging / procedure</button>
+      <button type="button" data-cat="functional" aria-pressed="false">6MWT / functional class</button>
+      <button type="button" data-cat="vitals" aria-pressed="false">Home vitals</button>
+      <button type="button" data-cat="medication" aria-pressed="false">Medication</button>
+      <button type="button" data-cat="note" aria-pressed="false">Appointment / note</button>
+    </div>
+
+    <form class="entry-form" id="entryForm" novalidate>
+      <div class="field">
+        <label for="f-date">Date</label>
+        <input type="date" id="f-date" required>
+      </div>
+
+      <fieldset id="fs-lab" class="cat-fieldset">
+        <div class="field-row">
+          <div class="field">
+            <label for="f-labTest">Test</label>
+            <select id="f-labTest">
+              <option>NT-proBNP</option>
+              <option>BNP</option>
+              <option>Hemoglobin</option>
+              <option>Creatinine</option>
+              <option>AST / ALT</option>
+              <option>INR</option>
+              <option>Ferritin / Iron saturation</option>
+              <option>Uric acid</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field" id="f-labTestOtherWrap" hidden>
+            <label for="f-labTestOther">Test name</label>
+            <input type="text" id="f-labTestOther" placeholder="e.g. Sodium">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-labValue">Result</label>
+            <input type="number" step="any" id="f-labValue" placeholder="e.g. 480">
+          </div>
+          <div class="field">
+            <label for="f-labUnit">Unit</label>
+            <input type="text" id="f-labUnit" placeholder="pg/mL">
+          </div>
+          <div class="field">
+            <label for="f-labFlag">Flag</label>
+            <select id="f-labFlag">
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="fs-imaging" class="cat-fieldset" hidden>
+        <div class="field">
+          <label for="f-imagingType">Type</label>
+          <select id="f-imagingType">
+            <option>Echocardiogram</option>
+            <option>Right heart catheterization</option>
+            <option>CT chest</option>
+            <option>V/Q scan</option>
+            <option>Cardiac MRI</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div id="imaging-echo" class="field-row">
+          <div class="field"><label for="f-rvsp">RVSP <span class="hint">mmHg</span></label><input type="number" step="any" id="f-rvsp"></div>
+          <div class="field"><label for="f-tapse">TAPSE <span class="hint">cm</span></label><input type="number" step="any" id="f-tapse"></div>
+          <div class="field">
+            <label for="f-rvFunction">RV function</label>
+            <select id="f-rvFunction">
+              <option value="">—</option>
+              <option>Normal</option>
+              <option>Mildly reduced</option>
+              <option>Moderately reduced</option>
+              <option>Severely reduced</option>
+            </select>
+          </div>
+        </div>
+        <div id="imaging-rhc" class="field-row" hidden>
+          <div class="field"><label for="f-mpap">mPAP <span class="hint">mmHg</span></label><input type="number" step="any" id="f-mpap"></div>
+          <div class="field"><label for="f-pcwp">PCWP (wedge) <span class="hint">mmHg</span></label><input type="number" step="any" id="f-pcwp"></div>
+          <div class="field"><label for="f-pvr">PVR <span class="hint">Wood units</span></label><input type="number" step="any" id="f-pvr"></div>
+          <div class="field"><label for="f-ci">Cardiac index <span class="hint">L/min/m²</span></label><input type="number" step="any" id="f-ci"></div>
+          <div class="field"><label for="f-rap">RAP <span class="hint">mmHg</span></label><input type="number" step="any" id="f-rap"></div>
+        </div>
+        <div class="field">
+          <label for="f-imagingImpression">Findings / impression</label>
+          <textarea id="f-imagingImpression" placeholder="Radiologist or cardiologist impression, in your own words"></textarea>
+        </div>
+      </fieldset>
+
+      <fieldset id="fs-functional" class="cat-fieldset" hidden>
+        <div class="field">
+          <label for="f-functionalType">Assessment</label>
+          <select id="f-functionalType">
+            <option value="6mwt">6-minute walk test</option>
+            <option value="whofc">WHO functional class</option>
+          </select>
+        </div>
+        <div id="functional-6mwt" class="field-row">
+          <div class="field"><label for="f-distance">Distance walked <span class="hint">meters</span></label><input type="number" step="any" id="f-distance"></div>
+          <div class="field"><label for="f-spo2Start">SpO₂ start <span class="hint">%</span></label><input type="number" step="any" id="f-spo2Start"></div>
+          <div class="field"><label for="f-spo2Low">SpO₂ lowest <span class="hint">%</span></label><input type="number" step="any" id="f-spo2Low"></div>
+          <div class="field"><label for="f-borg">Borg dyspnea <span class="hint">0–10</span></label><input type="number" step="any" min="0" max="10" id="f-borg"></div>
+        </div>
+        <div class="field" id="functional-whofc" hidden>
+          <label for="f-whoClass">WHO functional class</label>
+          <select id="f-whoClass">
+            <option value="I">Class I — no symptom limitation</option>
+            <option value="II">Class II — slight limitation</option>
+            <option value="III">Class III — marked limitation</option>
+            <option value="IV">Class IV — symptoms at rest</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset id="fs-vitals" class="cat-fieldset" hidden>
+        <div class="field-row">
+          <div class="field"><label for="f-vSpo2">Resting SpO₂ <span class="hint">%</span></label><input type="number" step="any" id="f-vSpo2"></div>
+          <div class="field"><label for="f-vHr">Heart rate <span class="hint">bpm</span></label><input type="number" step="any" id="f-vHr"></div>
+          <div class="field"><label for="f-vBpSys">Blood pressure — systolic</label><input type="number" step="any" id="f-vBpSys"></div>
+          <div class="field"><label for="f-vBpDia">Blood pressure — diastolic</label><input type="number" step="any" id="f-vBpDia"></div>
+          <div class="field"><label for="f-vWeight">Weight <span class="hint">lb</span></label><input type="number" step="any" id="f-vWeight"></div>
+        </div>
+      </fieldset>
+
+      <fieldset id="fs-medication" class="cat-fieldset" hidden>
+        <div class="field-row">
+          <div class="field"><label for="f-medName">Medication</label><input type="text" id="f-medName" placeholder="e.g. Ambrisentan"></div>
+          <div class="field"><label for="f-medDose">Dose</label><input type="text" id="f-medDose" placeholder="e.g. 10 mg"></div>
+          <div class="field"><label for="f-medFreq">Frequency</label><input type="text" id="f-medFreq" placeholder="e.g. once daily"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-medRoute">Route</label>
+            <select id="f-medRoute">
+              <option>Oral</option>
+              <option>Inhaled</option>
+              <option>Subcutaneous infusion</option>
+              <option>IV infusion</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-medAction">Change</label>
+            <select id="f-medAction">
+              <option>Started</option>
+              <option>Dose changed</option>
+              <option>Continued</option>
+              <option>Stopped</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="fs-note" class="cat-fieldset" hidden>
+        <div class="field-row">
+          <div class="field"><label for="f-visitType">Visit type</label><input type="text" id="f-visitType" placeholder="e.g. PAH follow-up"></div>
+          <div class="field"><label for="f-clinician">Clinician / clinic</label><input type="text" id="f-clinician" placeholder="e.g. Dr. Alvarez, PH clinic"></div>
+        </div>
+        <div class="field">
+          <label for="f-questions">Questions to ask next time</label>
+          <textarea id="f-questions" placeholder="Anything you want to remember to ask"></textarea>
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label for="f-notes">Notes</label>
+        <textarea id="f-notes" placeholder="Anything else worth remembering about this entry"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="saveEntryBtn">Save entry</button>
+        <span class="form-msg" id="formMsg" hidden>Saved.</span>
+      </div>
+    </form>
+  </section>
+
+  <section class="view" id="view-records" hidden>
+    <div class="toolbar">
+      <input type="search" id="searchBox" placeholder="Search records…">
+      <div class="chip-row" id="filterChips">
+        <button class="chip" data-filter="all" aria-pressed="true">All</button>
+        <button class="chip" data-filter="lab" aria-pressed="false">Labs</button>
+        <button class="chip" data-filter="imaging" aria-pressed="false">Imaging</button>
+        <button class="chip" data-filter="functional" aria-pressed="false">Functional</button>
+        <button class="chip" data-filter="vitals" aria-pressed="false">Vitals</button>
+        <button class="chip" data-filter="medication" aria-pressed="false">Meds</button>
+        <button class="chip" data-filter="note" aria-pressed="false">Notes</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="records">
+        <thead>
+          <tr><th>Date</th><th>Category</th><th>Details</th><th></th></tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="recordsEmpty" hidden>No records match. Try a different filter or add your first entry.</div>
+  </section>
+
+  <section class="view" id="view-summary" hidden>
+    <div class="summary-controls no-print">
+      <label for="summaryRange" style="font-size:0.82rem;color:var(--ink-secondary);font-weight:600;">Show entries from</label>
+      <select id="summaryRange">
+        <option value="30">last 30 days</option>
+        <option value="90" selected>last 90 days</option>
+        <option value="180">last 6 months</option>
+        <option value="3650">all time</option>
+      </select>
+      <button class="btn no-print" id="printBtn" type="button">Print / Save as PDF</button>
+      <button class="btn no-print" id="copyBtn" type="button">Copy as text</button>
+    </div>
+
+    <h1 style="font-size:1.15rem;margin-bottom:2px;">Visit summary</h1>
+    <p class="subtitle" id="summaryDateRange" style="margin-bottom:16px;"></p>
+
+    <div id="summaryContent"></div>
+
+    <div class="card no-print" style="margin-top:20px;">
+      <div class="card-title">Questions for my doctor</div>
+      <textarea id="questionsField" placeholder="Jot down anything you want to bring up at the next appointment — this is saved automatically."></textarea>
+    </div>
+
+    <div class="no-print" style="margin-top:20px;">
+      <label for="summaryText" style="font-size:0.78rem;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Plain-text version</label>
+      <textarea id="summaryText" readonly></textarea>
+    </div>
+  </section>
+
+</main>
+
+<footer class="hint-footer no-print">
+  Everything you enter stays on this device in your browser's local storage — nothing is uploaded anywhere. Clearing your browser data will erase it, so use Print or Copy before an appointment if you want a backup. This tool is for your own recordkeeping, not medical advice.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "wedgeAndWalk:v1";
+  var storageOk = true;
+  var state = { entries: [], sampleData: false, visitQuestions: "" };
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+  function loadState() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.entries)) state = parsed;
+      } else {
+        state = seedSampleData();
+        persist();
+      }
+    } catch (e) {
+      storageOk = false;
+      state = seedSampleData();
+    }
+  }
+
+  function persist() {
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { storageOk = false; }
+  }
+
+  function seedSampleData() {
+    var today = new Date();
+    function daysAgo(n) {
+      var d = new Date(today);
+      d.setDate(d.getDate() - n);
+      return d.toISOString().slice(0, 10);
+    }
+    return {
+      sampleData: true,
+      visitQuestions: "Ask about titrating up the inhaled treprostinil dose given the walk-distance drop.",
+      entries: [
+        { id: uid(), category: "imaging", date: daysAgo(210), imagingType: "Right heart catheterization", mpap: 42, pcwp: 9, pvr: 6.1, ci: 2.3, rap: 7, imagingImpression: "Pre-capillary pulmonary hypertension, moderate severity.", notes: "" },
+        { id: uid(), category: "lab", date: daysAgo(200), labTest: "NT-proBNP", value: 620, unit: "pg/mL", flag: "high", notes: "" },
+        { id: uid(), category: "functional", date: daysAgo(198), functionalType: "6mwt", distance: 380, spo2Start: 96, spo2Low: 89, borg: 4, notes: "" },
+        { id: uid(), category: "medication", date: daysAgo(195), medName: "Ambrisentan", medDose: "10 mg", medFreq: "once daily", medRoute: "Oral", medAction: "Started", notes: "" },
+        { id: uid(), category: "vitals", date: daysAgo(150), vSpo2: 95, vHr: 82, vBpSys: 118, vBpDia: 74, vWeight: 148, notes: "" },
+        { id: uid(), category: "lab", date: daysAgo(110), labTest: "NT-proBNP", value: 410, unit: "pg/mL", flag: "high", notes: "Trending down since starting ERA." },
+        { id: uid(), category: "functional", date: daysAgo(105), functionalType: "6mwt", distance: 415, spo2Start: 97, spo2Low: 91, borg: 3, notes: "" },
+        { id: uid(), category: "imaging", date: daysAgo(100), imagingType: "Echocardiogram", rvsp: 46, tapse: 1.8, rvFunction: "Mildly reduced", imagingImpression: "RVSP improved from prior study; RV function stable.", notes: "" },
+        { id: uid(), category: "vitals", date: daysAgo(60), vSpo2: 96, vHr: 78, vBpSys: 114, vBpDia: 72, vWeight: 146, notes: "" },
+        { id: uid(), category: "note", date: daysAgo(45), visitType: "PAH follow-up", clinician: "Dr. Alvarez, PH clinic", questions: "Discuss adding inhaled treprostinil.", notes: "Functional class improved to II." },
+        { id: uid(), category: "functional", date: daysAgo(45), functionalType: "whofc", whoClass: "II", notes: "" },
+        { id: uid(), category: "lab", date: daysAgo(30), labTest: "NT-proBNP", value: 455, unit: "pg/mL", flag: "high", notes: "" },
+        { id: uid(), category: "vitals", date: daysAgo(14), vSpo2: 94, vHr: 84, vBpSys: 120, vBpDia: 76, vWeight: 150, notes: "Slight weight gain, watching for fluid retention." },
+        { id: uid(), category: "functional", date: daysAgo(7), functionalType: "6mwt", distance: 392, spo2Start: 95, spo2Low: 88, borg: 5, notes: "" }
+      ]
+    };
+  }
+
+  function fmtDate(iso) {
+    var d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  }
+  function fmtShort(iso) {
+    var d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  var CATEGORY_LABELS = { lab: "Blood test", imaging: "Imaging", functional: "Functional", vitals: "Vitals", medication: "Medication", note: "Note" };
+
+  // ---------- tabs ----------
+  var views = ["overview", "add", "records", "summary"];
+  function showView(name) {
+    views.forEach(function (v) {
+      document.getElementById("view-" + v).hidden = v !== name;
+      var btn = document.getElementById("tab-btn-" + v);
+      btn.setAttribute("aria-selected", String(v === name));
+    });
+    if (name === "overview") renderOverview();
+    if (name === "records") renderRecords();
+    if (name === "summary") renderSummary();
+  }
+  views.forEach(function (v) {
+    document.getElementById("tab-btn-" + v).addEventListener("click", function () { showView(v); });
+  });
+
+  // ---------- entry helpers ----------
+  function entriesByCategory(cat) { return state.entries.filter(function (e) { return e.category === cat; }); }
+  function sortedByDate(list) { return list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }); }
+
+  function labFlagColor(flag) {
+    if (flag === "critical") return "critical";
+    if (flag === "high" || flag === "low") return "warning";
+    return "good";
+  }
+  function labFlagText(flag) {
+    return { normal: "Normal", low: "Low", high: "High", critical: "Critical" }[flag] || "—";
+  }
+  function whoFcColor(cls) {
+    if (cls === "I" || cls === "II") return "good";
+    if (cls === "III") return "warning";
+    return "critical";
+  }
+
+  // ---------- sparkline ----------
+  function sparkSvg(points, opts) {
+    opts = opts || {};
+    var w = 220, h = 48, padX = 4, padY = 6;
+    if (points.length === 0) return "";
+    var vals = points.map(function (p) { return p.value; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var range = max - min || 1;
+    var n = points.length;
+    var stepX = n > 1 ? (w - padX * 2) / (n - 1) : 0;
+    var coords = points.map(function (p, i) {
+      var x = padX + i * stepX;
+      var y = padY + (h - padY * 2) * (1 - (p.value - min) / range);
+      return [x, y];
+    });
+    var linePath = coords.map(function (c, i) { return (i === 0 ? "M" : "L") + c[0].toFixed(1) + "," + c[1].toFixed(1); }).join(" ");
+    var areaPath = linePath + " L" + coords[n - 1][0].toFixed(1) + "," + (h - padY).toFixed(1) + " L" + coords[0][0].toFixed(1) + "," + (h - padY).toFixed(1) + " Z";
+    var last = coords[n - 1];
+    return '<svg class="spark" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" role="img" aria-label="Trend sparkline">' +
+      '<path d="' + areaPath + '" fill="var(--accent)" fill-opacity="0.12" stroke="none"></path>' +
+      '<path d="' + linePath + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>' +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="5" fill="var(--surface)"></circle>' +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.2" fill="var(--accent)"></circle>' +
+      "</svg>";
+  }
+
+  function renderTile(container, opts) {
+    var el = document.createElement("article");
+    el.className = "tile";
+    if (!opts.series || opts.series.length === 0) {
+      el.innerHTML = '<div class="tile-head"><span class="tile-label">' + opts.label + "</span></div>" +
+        '<div class="tile-empty">No entries yet</div>';
+      container.appendChild(el);
+      return;
+    }
+    var series = sortedByDate(opts.series.map(function (s) { return { date: s.date, value: s.value }; }));
+    var last = series[series.length - 1];
+    var prev = series.length > 1 ? series[series.length - 2] : null;
+    var deltaHtml = "";
+    if (prev) {
+      var d = last.value - prev.value;
+      var dir = d === 0 ? "" : (d > 0 ? "up" : "down");
+      var goodDir = opts.higherIsBetter ? "up" : "down";
+      var deltaClass = d === 0 ? "" : (dir === goodDir ? "down" : "up");
+      var arrow = d > 0 ? "▲" : d < 0 ? "▼" : "•";
+      deltaHtml = '<div class="tile-delta ' + deltaClass + '">' + arrow + " " + Math.abs(d).toFixed(opts.decimals || 0) + " " + (opts.unit || "") + " since " + fmtShort(prev.date) + "</div>";
+    }
+    var pillHtml = "";
+    if (opts.pill) pillHtml = '<span class="pill pill-' + opts.pill.color + '">' + opts.pill.text + "</span>";
+    el.innerHTML =
+      '<div class="tile-head"><span class="tile-label">' + opts.label + "</span>" + pillHtml + "</div>" +
+      '<div class="tile-value">' + last.value.toFixed(opts.decimals || 0) + ' <span class="tile-unit">' + (opts.unit || "") + "</span></div>" +
+      deltaHtml +
+      sparkSvg(series) +
+      '<div class="spark-range"><span>' + fmtShort(series[0].date) + "</span><span>" + fmtShort(last.date) + "</span></div>";
+    container.appendChild(el);
+  }
+
+  // ---------- overview ----------
+  function renderOverview() {
+    var tiles = document.getElementById("trendTiles");
+    tiles.innerHTML = "";
+
+    var bnp = sortedByDate(entriesByCategory("lab").filter(function (e) { return e.labTest === "NT-proBNP" || e.labTest === "BNP"; }));
+    var bnpLast = bnp[bnp.length - 1];
+    renderTile(tiles, {
+      label: bnpLast ? bnpLast.labTest : "NT-proBNP / BNP",
+      unit: bnpLast ? bnpLast.unit : "pg/mL",
+      series: bnp.map(function (e) { return { date: e.date, value: e.value }; }),
+      higherIsBetter: false,
+      pill: bnpLast ? { color: labFlagColor(bnpLast.flag), text: labFlagText(bnpLast.flag) } : null
+    });
+
+    var sixmwt = sortedByDate(entriesByCategory("functional").filter(function (e) { return e.functionalType === "6mwt" && e.distance != null; }));
+    renderTile(tiles, {
+      label: "6-minute walk distance",
+      unit: "m",
+      series: sixmwt.map(function (e) { return { date: e.date, value: e.distance }; }),
+      higherIsBetter: true
+    });
+
+    var spo2 = sortedByDate(entriesByCategory("vitals").filter(function (e) { return e.vSpo2 != null; }));
+    var spo2Last = spo2[spo2.length - 1];
+    var spo2Pill = null;
+    if (spo2Last) spo2Pill = spo2Last.vSpo2 >= 95 ? { color: "good", text: "Normal" } : spo2Last.vSpo2 >= 90 ? { color: "warning", text: "Low" } : { color: "critical", text: "Very low" };
+    renderTile(tiles, { label: "Resting SpO₂", unit: "%", series: spo2.map(function (e) { return { date: e.date, value: e.vSpo2 }; }), higherIsBetter: true, pill: spo2Pill });
+
+    var weight = sortedByDate(entriesByCategory("vitals").filter(function (e) { return e.vWeight != null; }));
+    renderTile(tiles, { label: "Weight", unit: "lb", series: weight.map(function (e) { return { date: e.date, value: e.vWeight }; }), higherIsBetter: false, decimals: 1 });
+
+    var whofc = sortedByDate(entriesByCategory("functional").filter(function (e) { return e.whoClass; }));
+    var whofcLast = whofc[whofc.length - 1];
+    var whofcTile = document.createElement("article");
+    whofcTile.className = "tile";
+    if (whofcLast) {
+      whofcTile.innerHTML = '<div class="tile-head"><span class="tile-label">WHO functional class</span><span class="pill pill-' + whoFcColor(whofcLast.whoClass) + '">Class ' + whofcLast.whoClass + '</span></div>' +
+        '<div class="tile-value">' + whofcLast.whoClass + '</div>' +
+        '<div class="tile-delta">as of ' + fmtDate(whofcLast.date) + "</div>";
+    } else {
+      whofcTile.innerHTML = '<div class="tile-head"><span class="tile-label">WHO functional class</span></div><div class="tile-empty">No entries yet</div>';
+    }
+    tiles.appendChild(whofcTile);
+
+    // imaging cards
+    var imagingCards = document.getElementById("imagingCards");
+    imagingCards.innerHTML = "";
+    var echo = sortedByDate(entriesByCategory("imaging").filter(function (e) { return e.imagingType === "Echocardiogram"; })).pop();
+    var rhc = sortedByDate(entriesByCategory("imaging").filter(function (e) { return e.imagingType === "Right heart catheterization"; })).pop();
+    [["Echocardiogram", echo, [["RVSP", "rvsp", "mmHg"], ["TAPSE", "tapse", "cm"], ["RV function", "rvFunction", ""]]],
+     ["Right heart catheterization", rhc, [["mPAP", "mpap", "mmHg"], ["PCWP (wedge)", "pcwp", "mmHg"], ["PVR", "pvr", "WU"], ["Cardiac index", "ci", "L/min/m²"]]]
+    ].forEach(function (row) {
+      var title = row[0], entry = row[1], fields = row[2];
+      var card = document.createElement("div");
+      card.className = "card";
+      if (!entry) {
+        card.innerHTML = '<div class="card-title">' + title + '</div><div class="tile-empty">No entries yet</div>';
+        imagingCards.appendChild(card);
+        return;
+      }
+      var kv = fields.map(function (f) {
+        var val = entry[f[1]];
+        if (val === undefined || val === null || val === "") return "";
+        return "<dt>" + f[0] + "</dt><dd>" + val + (f[2] ? " " + f[2] : "") + "</dd>";
+      }).join("");
+      card.innerHTML = '<div class="card-title">' + title + '<time>' + fmtDate(entry.date) + "</time></div><dl class=\"kv\">" + kv + "</dl>";
+      imagingCards.appendChild(card);
+    });
+
+    // notes
+    var notesCard = document.getElementById("notesCard");
+    var notes = sortedByDate(entriesByCategory("note")).reverse().slice(0, 3);
+    if (notes.length === 0) {
+      notesCard.innerHTML = '<div class="tile-empty">No appointment notes logged yet.</div>';
+    } else {
+      notesCard.innerHTML = notes.map(function (n) {
+        return '<div class="summary-item"><span class="s-date">' + fmtDate(n.date) + '</span><span class="s-detail">' + escapeHtml((n.visitType || "Visit") + (n.clinician ? " — " + n.clinician : "") + (n.notes ? ": " + n.notes : "")) + "</span></div>";
+      }).join("");
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // ---------- add entry form ----------
+  var currentCategory = "lab";
+  var categoryPicker = document.getElementById("categoryPicker");
+  categoryPicker.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-cat]");
+    if (!btn) return;
+    currentCategory = btn.dataset.cat;
+    Array.prototype.forEach.call(categoryPicker.querySelectorAll("button"), function (b) {
+      b.setAttribute("aria-pressed", String(b === btn));
+    });
+    ["lab", "imaging", "functional", "vitals", "medication", "note"].forEach(function (c) {
+      document.getElementById("fs-" + c).hidden = c !== currentCategory;
+    });
+  });
+
+  document.getElementById("f-labTest").addEventListener("change", function () {
+    document.getElementById("f-labTestOtherWrap").hidden = this.value !== "Other";
+    var units = { "NT-proBNP": "pg/mL", "BNP": "pg/mL", "Hemoglobin": "g/dL", "Creatinine": "mg/dL", "AST / ALT": "U/L", "INR": "", "Ferritin / Iron saturation": "ng/mL", "Uric acid": "mg/dL" };
+    if (units[this.value] !== undefined) document.getElementById("f-labUnit").value = units[this.value];
+  });
+
+  document.getElementById("f-imagingType").addEventListener("change", function () {
+    document.getElementById("imaging-echo").hidden = this.value !== "Echocardiogram";
+    document.getElementById("imaging-rhc").hidden = this.value !== "Right heart catheterization";
+  });
+
+  document.getElementById("f-functionalType").addEventListener("change", function () {
+    document.getElementById("functional-6mwt").hidden = this.value !== "6mwt";
+    document.getElementById("functional-whofc").hidden = this.value !== "whofc";
+  });
+
+  function val(id) { var el = document.getElementById(id); return el.value === "" ? undefined : el.value; }
+  function numVal(id) { var v = val(id); return v === undefined ? undefined : parseFloat(v); }
+
+  document.getElementById("entryForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var date = val("f-date");
+    if (!date) { document.getElementById("f-date").focus(); return; }
+    var entry = { id: uid(), category: currentCategory, date: date, notes: val("f-notes") || "" };
+
+    if (currentCategory === "lab") {
+      entry.labTest = val("f-labTest") === "Other" ? (val("f-labTestOther") || "Other") : val("f-labTest");
+      entry.value = numVal("f-labValue");
+      entry.unit = val("f-labUnit") || "";
+      entry.flag = val("f-labFlag") || "normal";
+      if (entry.value === undefined) { document.getElementById("f-labValue").focus(); return; }
+    } else if (currentCategory === "imaging") {
+      entry.imagingType = val("f-imagingType");
+      if (entry.imagingType === "Echocardiogram") {
+        entry.rvsp = numVal("f-rvsp"); entry.tapse = numVal("f-tapse"); entry.rvFunction = val("f-rvFunction");
+      } else if (entry.imagingType === "Right heart catheterization") {
+        entry.mpap = numVal("f-mpap"); entry.pcwp = numVal("f-pcwp"); entry.pvr = numVal("f-pvr"); entry.ci = numVal("f-ci"); entry.rap = numVal("f-rap");
+      }
+      entry.imagingImpression = val("f-imagingImpression") || "";
+    } else if (currentCategory === "functional") {
+      entry.functionalType = val("f-functionalType");
+      if (entry.functionalType === "6mwt") {
+        entry.distance = numVal("f-distance"); entry.spo2Start = numVal("f-spo2Start"); entry.spo2Low = numVal("f-spo2Low"); entry.borg = numVal("f-borg");
+      } else {
+        entry.whoClass = val("f-whoClass");
+      }
+    } else if (currentCategory === "vitals") {
+      entry.vSpo2 = numVal("f-vSpo2"); entry.vHr = numVal("f-vHr"); entry.vBpSys = numVal("f-vBpSys"); entry.vBpDia = numVal("f-vBpDia"); entry.vWeight = numVal("f-vWeight");
+    } else if (currentCategory === "medication") {
+      entry.medName = val("f-medName"); entry.medDose = val("f-medDose"); entry.medFreq = val("f-medFreq"); entry.medRoute = val("f-medRoute"); entry.medAction = val("f-medAction");
+      if (!entry.medName) { document.getElementById("f-medName").focus(); return; }
+    } else if (currentCategory === "note") {
+      entry.visitType = val("f-visitType"); entry.clinician = val("f-clinician"); entry.questions = val("f-questions");
+    }
+
+    if (state.sampleData) { state.sampleData = false; state.entries = []; }
+    state.entries.push(entry);
+    persist();
+    updateSampleBanner();
+
+    document.getElementById("entryForm").reset();
+    document.getElementById("f-date").value = date;
+    var msg = document.getElementById("formMsg");
+    msg.hidden = false;
+    setTimeout(function () { msg.hidden = true; }, 2200);
+  });
+
+  document.getElementById("f-date").valueAsDate = new Date();
+
+  // ---------- records ----------
+  var activeFilter = "all";
+  var searchTerm = "";
+
+  function entrySummary(e) {
+    if (e.category === "lab") return e.labTest + ": " + (e.value != null ? e.value : "—") + (e.unit ? " " + e.unit : "") + " (" + labFlagText(e.flag) + ")";
+    if (e.category === "imaging") {
+      var bits = [e.imagingType];
+      if (e.rvsp != null) bits.push("RVSP " + e.rvsp + " mmHg");
+      if (e.tapse != null) bits.push("TAPSE " + e.tapse + " cm");
+      if (e.mpap != null) bits.push("mPAP " + e.mpap + " mmHg");
+      if (e.pcwp != null) bits.push("PCWP " + e.pcwp + " mmHg");
+      if (e.pvr != null) bits.push("PVR " + e.pvr + " WU");
+      if (e.imagingImpression) bits.push(e.imagingImpression);
+      return bits.join(" — ");
+    }
+    if (e.category === "functional") {
+      if (e.functionalType === "6mwt") return "6MWT: " + (e.distance != null ? e.distance + " m" : "—") + (e.spo2Low != null ? ", lowest SpO₂ " + e.spo2Low + "%" : "") + (e.borg != null ? ", Borg " + e.borg : "");
+      return "WHO functional class " + e.whoClass;
+    }
+    if (e.category === "vitals") {
+      var v = [];
+      if (e.vSpo2 != null) v.push("SpO₂ " + e.vSpo2 + "%");
+      if (e.vHr != null) v.push("HR " + e.vHr);
+      if (e.vBpSys != null && e.vBpDia != null) v.push("BP " + e.vBpSys + "/" + e.vBpDia);
+      if (e.vWeight != null) v.push(e.vWeight + " lb");
+      return v.join(", ") || "—";
+    }
+    if (e.category === "medication") return e.medAction + " — " + e.medName + (e.medDose ? " " + e.medDose : "") + (e.medFreq ? ", " + e.medFreq : "");
+    if (e.category === "note") return (e.visitType || "Visit") + (e.clinician ? " with " + e.clinician : "") + (e.notes ? " — " + e.notes : "");
+    return "";
+  }
+
+  function renderRecords() {
+    var body = document.getElementById("recordsBody");
+    var list = sortedByDate(state.entries).reverse().filter(function (e) {
+      if (activeFilter !== "all" && e.category !== activeFilter) return false;
+      if (searchTerm) {
+        var hay = (entrySummary(e) + " " + (e.notes || "")).toLowerCase();
+        if (hay.indexOf(searchTerm) === -1) return false;
+      }
+      return true;
+    });
+    document.getElementById("recordsEmpty").hidden = list.length !== 0;
+    body.innerHTML = list.map(function (e) {
+      return "<tr>" +
+        '<td class="date">' + fmtDate(e.date) + "</td>" +
+        "<td>" + CATEGORY_LABELS[e.category] + "</td>" +
+        "<td>" + escapeHtml(entrySummary(e)) + (e.notes && e.category !== "note" ? '<div style="color:var(--ink-muted);font-size:0.78rem;margin-top:2px;">' + escapeHtml(e.notes) + "</div>" : "") + "</td>" +
+        '<td class="actions"><button class="btn btn-sm btn-danger" data-del="' + e.id + '">Delete</button></td>' +
+        "</tr>";
+    }).join("");
+  }
+
+  document.getElementById("searchBox").addEventListener("input", function () { searchTerm = this.value.trim().toLowerCase(); renderRecords(); });
+  document.getElementById("filterChips").addEventListener("click", function (e) {
+    var btn = e.target.closest(".chip");
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    Array.prototype.forEach.call(this.querySelectorAll(".chip"), function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
+    renderRecords();
+  });
+  document.getElementById("recordsBody").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-del]");
+    if (!btn) return;
+    state.entries = state.entries.filter(function (en) { return en.id !== btn.dataset.del; });
+    persist();
+    renderRecords();
+  });
+
+  // ---------- sample banner ----------
+  function updateSampleBanner() {
+    document.getElementById("sampleBanner").hidden = !state.sampleData;
+  }
+  document.getElementById("clearSampleBtn").addEventListener("click", function () {
+    state.sampleData = false;
+    state.entries = [];
+    persist();
+    updateSampleBanner();
+    renderOverview();
+    renderRecords();
+  });
+
+  // ---------- visit summary ----------
+  document.getElementById("summaryRange").addEventListener("change", renderSummary);
+  document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var text = document.getElementById("summaryText");
+    text.select();
+    try {
+      navigator.clipboard.writeText(text.value).then(function () {
+        var b = document.getElementById("copyBtn");
+        var old = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = old; }, 1600);
+      }).catch(function () { /* fall back to manual selection, already selected above */ });
+    } catch (e) { /* clipboard unavailable; text is selected for manual copy */ }
+  });
+
+  var questionsField = document.getElementById("questionsField");
+  questionsField.addEventListener("input", function () { state.visitQuestions = this.value; persist(); });
+
+  function renderSummary() {
+    var days = parseInt(document.getElementById("summaryRange").value, 10);
+    var cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    var cutoffIso = cutoff.toISOString().slice(0, 10);
+    var inRange = sortedByDate(state.entries.filter(function (e) { return e.date >= cutoffIso; })).reverse();
+
+    document.getElementById("summaryDateRange").textContent = inRange.length
+      ? fmtDate(inRange[inRange.length - 1].date) + " – " + fmtDate(inRange[0].date)
+      : "No entries in this range";
+
+    var groups = { lab: [], imaging: [], functional: [], vitals: [], medication: [], note: [] };
+    inRange.forEach(function (e) { groups[e.category].push(e); });
+
+    var content = document.getElementById("summaryContent");
+    var order = [["lab", "Blood tests"], ["imaging", "Imaging & procedures"], ["functional", "Functional tests"], ["vitals", "Home vitals"], ["medication", "Medications"], ["note", "Appointments & notes"]];
+    var html = "";
+    var plain = ["WEDGE & WALK — VISIT SUMMARY", document.getElementById("summaryDateRange").textContent, ""];
+    order.forEach(function (pair) {
+      var cat = pair[0], label = pair[1];
+      if (groups[cat].length === 0) return;
+      html += '<div class="summary-group"><h3>' + label + "</h3>";
+      plain.push(label.toUpperCase());
+      groups[cat].forEach(function (e) {
+        html += '<div class="summary-item"><span class="s-date">' + fmtDate(e.date) + '</span><span class="s-detail">' + escapeHtml(entrySummary(e)) + "</span></div>";
+        plain.push(fmtDate(e.date) + " — " + entrySummary(e));
+      });
+      html += "</div>";
+      plain.push("");
+    });
+    content.innerHTML = html || '<div class="empty-state">No entries in this range yet.</div>';
+
+    if (state.visitQuestions) plain.push("QUESTIONS FOR MY DOCTOR", state.visitQuestions);
+    document.getElementById("summaryText").value = plain.join("\n");
+    questionsField.value = state.visitQuestions || "";
+  }
+
+  // ---------- init ----------
+  loadState();
+  document.getElementById("storageWarning").hidden = storageOk;
+  updateSampleBanner();
+  showView("overview");
+})();
+</script>
